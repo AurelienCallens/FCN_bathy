@@ -1,4 +1,12 @@
-__pycache__
+# Python extensions
+___pycache__/
 .spyproject
 .ipynb_checkpoints
+
+# Git
 .git
+
+# Data repository
+Data/
+Data_2/
+Data_all/
