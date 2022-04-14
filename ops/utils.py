@@ -16,7 +16,7 @@ def img_rotation(data_fp):
     data = rasterio.open(data_fp)
     bn = os.path.basename(data_fp)
     # Save as raster to facilitate processing
-    raster_name = "data_CNN/temp.tif"
+    raster_name = "../data_CNN/temp.tif"
     with rasterio.open(
         raster_name,
         'w',

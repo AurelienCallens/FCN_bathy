@@ -24,7 +24,7 @@ res_df['Type_img'] = res_df['Bn_img'].apply(lambda x: re.search(r'.*?ed\_(.*)\..
 res_df['Z_m'] = res_df['Bn_img'].apply(lambda x: re.search(r'.*?zplane\_(.*)\_bl.*', x).group(1).replace('_R', ''))
 
 # Find Tide level (joining by date)
-tide_data = pd.read_csv('data_CNN/Data_processed/obs_tide.csv')
+tide_data = pd.read_csv('../data_CNN/Data_processed/obs_tide.csv')
 
 tide_data['Date'] = pd.to_datetime(tide_data['Date'],
                                    format="%Y-%m-%d %H:%M:%S")
@@ -37,7 +37,7 @@ new_df = pd.merge(res_df, tide_data, on='Date', how='left')
 new_df['Date_h'] = new_df['Date'].apply(lambda x: (x + timedelta(hours=1)).strftime("%Y-%m-%d %H"))
 
 # Find wave conditions (joining by date)
-wave_data = pd.read_csv('data_CNN/Data_processed/wave_data_bathy.csv')
+wave_data = pd.read_csv('../data_CNN/Data_processed/wave_data_bathy.csv')
 wave_data['Date'] = pd.to_datetime(wave_data['Date'], format="%Y-%m-%dT%H:%M:%SZ")
 wave_data['Date_h'] = wave_data['Date'].apply(lambda x: x.strftime("%Y-%m-%d %H"))
 wave_data.drop('VMDR', axis=1, inplace=True)
@@ -121,5 +121,13 @@ for date in date_unique:
 
 final_df = final_df[final_df.Date.apply(lambda x: x in date_unique[date_verif])]
 
+# Remove day that are not supposed to be here
 
-final_df.to_csv("data_CNN/Data_processed/meta_df.csv", index=False)
+day_to_rm = ['2017-03-30', '2018-02-01', '2021-03-06', '2021-06-22']
+final_df = final_df[final_df.Date.apply(lambda x: not x.strftime('%Y-%m-%d') in day_to_rm)]
+
+
+
+
+
+final_df.to_csv("../data_CNN/Data_processed/meta_df.csv", index=False)

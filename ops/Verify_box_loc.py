@@ -20,7 +20,7 @@ zm_unique = final_df['Z_m'].sort_values().unique()
 bat_df = pd.read_csv("data_CNN/Data_processed/Processed_bathy.csv")
 
 
-zm = zm_unique[6]
+zm = zm_unique[21]
 temp_df = final_df[final_df['Z_m'] == zm].reset_index( drop=True)
 temp_df['bathy'].unique()
 fp_snp = list(temp_df.loc[(temp_df['Type_img'] == 'snap'), 'Fp_img'])

@@ -10,13 +10,13 @@ from shapely.geometry import Point
 from scipy.interpolate import griddata
 from sklearn.preprocessing import MinMaxScaler
 from ops.utils import img_rotation, proj, crop_img, ffill
-
+import matplotlib.pyplot as plt
 
 # Settings
 output_size = 512
-fp_name = 'data_CNN/Data/'
-df_fp_img = 'data_CNN/Data_processed/meta_df.csv'
-df_fp_bat = "data_CNN/Data_processed/Processed_bathy.csv"
+fp_name = '../data_CNN/Data_all/'
+df_fp_img = '../data_CNN/Data_processed/meta_df.csv'
+df_fp_bat = "../data_CNN/Data_processed/Processed_bathy.csv"
 tide_min = None
 
 # Import df
@@ -28,7 +28,7 @@ if type(tide_min) == float:
 final_df.sort_values('Date', ignore_index=True, inplace=True)
 
 ### Train/Test
-day_test = ['2017-03-30', '2018-01-31', '2021-03-03', '2021-06-22']
+day_test = ['2017-03-28', '2018-01-31', '2021-03-03', '2021-06-21']
 final_df['Split'] = 'Train'
 final_df.loc[final_df['Date'].apply(lambda x: x[:10] in day_test), 'Split'] = 'Test'
 
