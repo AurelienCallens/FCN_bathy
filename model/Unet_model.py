@@ -85,7 +85,7 @@ class UNet():
         conv2 = Conv2D(filters=filters*2, **conv_args)(conv2)
         conv2 = BatchNormalization(trainable=True)(conv2)
         conv2 = GaussianNoise(noise_std)(conv2)
-        drop2 = Dropout(0.1)(conv2, training=True)
+        drop2 = Dropout(drop_rate)(conv2, training=True)
         pool2 = MaxPooling2D(pool_size=(2, 2))(drop2)
 
         # Conv 3
@@ -94,7 +94,7 @@ class UNet():
         conv3 = Conv2D(filters=filters*4, **conv_args)(conv3)
         conv3 = BatchNormalization(trainable=True)(conv3)
         conv3 = GaussianNoise(noise_std)(conv3)
-        drop3 = Dropout(0.1)(conv3, training=True)
+        drop3 = Dropout(drop_rate)(conv3, training=True)
         pool3 = MaxPooling2D(pool_size=(2, 2))(drop3)
 
         # Conv 4
@@ -103,7 +103,7 @@ class UNet():
         conv4 = Conv2D(filters=filters*8, **conv_args)(conv4)
         conv4 = BatchNormalization(trainable=True)(conv4)
         conv4 = GaussianNoise(noise_std)(conv4)
-        drop4 = Dropout(0.1)(conv4, training=True)
+        drop4 = Dropout(drop_rate)(conv4, training=True)
         pool4 = MaxPooling2D(pool_size=(2, 2))(drop4)
 
         # Conv 5
@@ -127,7 +127,7 @@ class UNet():
         conv6 = Conv2DTranspose(filters=filters*4, strides=(2, 2), **conv_args)((conv6))
         conv6 = BatchNormalization(trainable=True)(conv6)
         conv6 = GaussianNoise(noise_std)(conv6)
-        drop6 = Dropout(0.1)(conv6, training=True)
+        drop6 = Dropout(drop_rate)(conv6, training=True)
 
         # UpConv 3
         merge7 = concatenate([drop3, drop6], axis=3)
@@ -138,7 +138,7 @@ class UNet():
         conv7 = Conv2DTranspose(filters=filters*2, strides=(2, 2), **conv_args)((conv7))
         conv7 = BatchNormalization(trainable=True)(conv7)
         conv7 = GaussianNoise(noise_std)(conv7)
-        drop7 = Dropout(0.1)(conv7, training=True)
+        drop7 = Dropout(drop_rate)(conv7, training=True)
 
         # UpConv 4
         merge8 = concatenate([drop2, drop7], axis=3)
@@ -149,7 +149,7 @@ class UNet():
         conv8 = Conv2DTranspose(filters=filters, strides=(2, 2), **conv_args)((conv8))
         conv8 = BatchNormalization(trainable=True)(conv8)
         conv8 = GaussianNoise(noise_std)(conv8)
-        drop8 = Dropout(0.1)(conv8, training=True)
+        drop8 = Dropout(drop_rate)(conv8, training=True)
 
         # Conv 5 output
         merge9 = concatenate([conv1, drop8], axis=3)
@@ -159,7 +159,7 @@ class UNet():
         conv10 = Conv2D(1, 1, activation=None)(conv9)
 
         model = Model(inputs=inputs, outputs=[conv10])
-        model.compile(optimizer=optimizer, loss='mse', metrics=[pixel_error, absolute_error, pred_min, pred_max])
+        model.compile(optimizer=optimizer, loss='mse', metrics=[absolute_error, pred_min, pred_max])
 
         if(pretrained_weights != False):
             model.load_weights(pretrained_weights)
