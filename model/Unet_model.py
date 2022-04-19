@@ -28,20 +28,11 @@ class UNet():
 
     def data_generator(self, split):
         if split == 'Train':
-            n_val = int(len(train_input_img_paths)*0.8)
-            random.Random(1337).shuffle(train_input_img_paths)
-            random.Random(1337).shuffle(train_target_img_paths)
-
-            val_input_img_paths = train_input_img_paths[-n_val:]
-            val_target_img_paths = train_target_img_paths[-n_val:]
-            tr_input_img_paths = train_input_img_paths[:-n_val]
-            tr_target_img_paths = train_target_img_paths[:-n_val]
-
             train_gen = Custom_gen(batch_size=self.batch_size,
                                       img_size=self.img_size,
                                       bands=self.bands,
-                                      input_img_paths=tr_input_img_paths,
-                                      target_img_paths=tr_target_img_paths,
+                                      input_img_paths=train_input_img_paths,
+                                      target_img_paths=train_target_img_paths,
                                       split='Train')
 
             val_gen = Custom_gen(batch_size=self.batch_size,
