@@ -10,14 +10,13 @@ from shapely.geometry import Point
 from scipy.interpolate import griddata
 from sklearn.preprocessing import MinMaxScaler
 from ops.utils import img_rotation, proj, crop_img, ffill
-import matplotlib.pyplot as plt
 
 # Settings
 output_size = 512
-fp_name = './data_CNN/Data_all/'
+fp_name = './data_CNN/Data_sup_1.1/'
 df_fp_img = './data_CNN/Data_processed/meta_df.csv'
 df_fp_bat = "./data_CNN/Data_processed/Processed_bathy.csv"
-tide_min = None
+tide_min = 1.1
 
 # Import df
 ## Img dataframe

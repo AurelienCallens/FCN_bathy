@@ -15,7 +15,8 @@ from executor.tf_init import start_tf_sesssion
 from evaluation.Verif_functions import plot_history, check_nan_generator
 
 # 0) Initialize session
-mode = 'gpu'
+mode = 'cpu'
+#mode = 'gpu'
 start_tf_sesssion(mode)
 
 # 1) Test one model

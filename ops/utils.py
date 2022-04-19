@@ -84,13 +84,3 @@ def ffill(arr):
     np.maximum.accumulate(idx, axis=1, out=idx)
     out = arr[np.arange(idx.shape[0])[:,None], idx]
     return out
-
-def sorted_list_path(dirname, file_ext=".npy"):
-   res_list = sorted(
-       [
-           os.path.join(dirname, fname)
-           for fname in os.listdir(dirname)
-           if fname.endswith(file_ext)
-       ]
-   )
-   return(res_list)
