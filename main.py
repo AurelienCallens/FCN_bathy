@@ -15,7 +15,7 @@ from executor.tf_init import start_tf_sesssion
 from evaluation.Verif_functions import plot_history, check_nan_generator
 
 # 0) Initialize session
-mode = 'cpu'
+mode = 'gpu'
 start_tf_sesssion(mode)
 
 # 1) Test one model
@@ -33,8 +33,8 @@ model.summary()
 Trained_model = Unet_model.train()
 
 # Verification of the training loss
-name = 'CNN_batch' + str(batch_size) + '_filter' + str(filters) + '_lr' + str(lr) + '_decay_' + str(factor_decay) + '_every' + str(nb_epoch_decay)
-plot_history(test1[1], name + '.png')
+name = 'CNN_batch' + str(batch_size) + '_filter' + str(filters) + '_lr' + str(lr) + '_decay_' + str(factor_decay) + '_every' + str(nb_epoch_decay) + '_activ_' + str(activ)
+plot_history(Trained_model[1], name + '.png')
 
 preds = Unet_model.predict()
 test_gen = Unet_model.data_generator('Test')
