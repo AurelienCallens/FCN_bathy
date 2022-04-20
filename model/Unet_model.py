@@ -183,7 +183,7 @@ class UNet():
         return([model, history])
 
     def predict(self):
-        test_generator = self.data_generator('Test')
+        test_generator = self.data_generator(split='Test')
         preds = self.model.predict(test_generator)
         return(preds)
     def model_load(self):

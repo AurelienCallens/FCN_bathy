@@ -13,7 +13,7 @@ from ops.utils import img_rotation, proj, crop_img, ffill
 
 # Settings
 output_size = 512
-fp_name = './data_CNN/Data_sup_1.1/'
+fp_name = './data_CNN/Data_sup_bathy_1.1/'
 df_fp_img = './data_CNN/Data_processed/meta_df.csv'
 df_fp_bat = "./data_CNN/Data_processed/Processed_bathy.csv"
 tide_min = 1.1
@@ -26,15 +26,33 @@ if type(tide_min) == float:
 
 final_df.sort_values('Date', ignore_index=True, inplace=True)
 
-### Train/Test
-day_test = ['2017-03-28', '2018-01-31', '2021-03-03', '2021-06-21']
+#### Train test by day 
+##### Train
 final_df['Split'] = 'Train'
+
+##### Test
+day_test = ['2017-03-28', '2018-01-31', '2021-03-03', '2021-06-21']
 final_df.loc[final_df['Date'].apply(lambda x: x[:10] in day_test), 'Split'] = 'Test'
 
-
+##### Validation
 ind = final_df[final_df['Split'] == 'Train'].groupby('bathy', group_keys=False).apply(lambda x: x.sample(frac=0.2)).index
-
 final_df.loc[ind, 'Split'] = 'Validation'
+
+### Train/Test
+#### Train test by bathy
+
+##### Train
+final_df['Split'] = 'Train'
+
+##### Test
+bathy_test = '2021-06-21'
+final_df.loc[final_df['bathy'].apply(lambda x: x == bathy_test), 'Split'] = 'Test'
+
+##### Validation
+ind = final_df[final_df['Split'] == 'Train'].groupby('bathy', group_keys=False).apply(lambda x: x.sample(frac=0.2)).index
+final_df.loc[ind, 'Split'] = 'Validation'
+
+
 
 ### Scaling 0-1
 scaler = MinMaxScaler()
