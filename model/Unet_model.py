@@ -40,7 +40,7 @@ class UNet():
                                     bands=self.bands,
                                     input_img_paths=val_input_img_paths,
                                     target_img_paths=val_target_img_paths,
-                                    split='Val')
+                                    split='Validation')
             return([train_gen, val_gen])
         else:
             test_gen = Custom_gen(batch_size=1,
@@ -186,6 +186,6 @@ class UNet():
         test_generator = self.data_generator(split='Test')
         preds = self.model.predict(test_generator)
         return(preds)
-    def model_load(self):
+    def load(self):
         self.model = tf.keras.models.load_model(self.model_saved)
         print("Model imported!")

@@ -15,11 +15,13 @@ class Custom_gen(keras.utils.Sequence):
         self.input_img_paths = input_img_paths
         self.target_img_paths = target_img_paths
         self.bands = bands
-        if split == 'Train':
+        if split in ['Validation', 'Test']:
+            self.augmentor = ImageDataGenerator(rescale=1/255)
+        elif split == 'Train':
             self.augmentor = ImageDataGenerator(brightness_range=[0.9, 1.1],
                                                 rescale=1/255)
-        else:
-            self.augmentor = ImageDataGenerator(rescale=1/255)
+        else: 
+            print('Wrong split type!')
 
     def __len__(self):
         return len(self.target_img_paths) // self.batch_size

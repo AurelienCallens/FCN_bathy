@@ -21,7 +21,7 @@ drop_rate = 0.2
 # 2) FCN training parameters
 batch_size = 6
 n_epochs = 500
-lr = 0.001
+lr = 0.003
 optimizer = tf.keras.optimizers.Nadam()
 #optimizer = tf.keras.optimizers.SGD(momentum=0.9)
 # 3) Callback parameters
