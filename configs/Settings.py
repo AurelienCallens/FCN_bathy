@@ -9,6 +9,9 @@ import tensorflow as tf
 img_size = (512, 512)
 n_channels = 3
 
+# Data augmentation on train split
+brightness_r = [0.9, 1.1]
+shift_range = 0.4
 # 1) FCN Structure
 
 activ = "relu"
@@ -36,7 +39,7 @@ epoch_patience = 20
 
 
 # 4) File paths
-dir_name = "Data_bathy_sup_1.1"
+dir_name = "Data_sup_1.1"
 input_dir_train = "./data_CNN/" + dir_name + "/Train/Input/"
 target_dir_train = "./data_CNN/" + dir_name + "/Train/Target/"
 input_dir_val = "./data_CNN/" + dir_name + "/Train/Input/"

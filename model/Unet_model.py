@@ -29,26 +29,27 @@ class UNet():
     def data_generator(self, split):
         if split == 'Train':
             train_gen = Custom_gen(batch_size=self.batch_size,
-                                      img_size=self.img_size,
-                                      bands=self.bands,
-                                      input_img_paths=train_input_img_paths,
-                                      target_img_paths=train_target_img_paths,
-                                      split='Train')
+                                   img_size=self.img_size,
+                                   bands=self.bands,
+                                   input_img_paths=train_input_img_paths,
+                                   target_img_paths=train_target_img_paths,
+                                   split='Train')
 
             val_gen = Custom_gen(batch_size=self.batch_size,
-                                    img_size=self.img_size,
-                                    bands=self.bands,
-                                    input_img_paths=val_input_img_paths,
-                                    target_img_paths=val_target_img_paths,
-                                    split='Validation')
+                                 img_size=self.img_size,
+                                 bands=self.bands,
+                                 input_img_paths=val_input_img_paths,
+                                 target_img_paths=val_target_img_paths,
+                                 split='Validation')
+
             return([train_gen, val_gen])
         else:
             test_gen = Custom_gen(batch_size=1,
-                                     img_size=self.img_size,
-                                     bands=self.bands,
-                                     input_img_paths=test_input_img_paths,
-                                     target_img_paths=test_target_img_paths,
-                                     split='Test')
+                                  img_size=self.img_size,
+                                  bands=self.bands,
+                                  input_img_paths=test_input_img_paths,
+                                  target_img_paths=test_target_img_paths,
+                                  split='Test')
             return(test_gen)
 
 
@@ -186,6 +187,3 @@ class UNet():
         test_generator = self.data_generator(split='Test')
         preds = self.model.predict(test_generator)
         return(preds)
-    def load(self):
-        self.model = tf.keras.models.load_model(self.model_saved)
-        print("Model imported!")

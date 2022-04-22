@@ -13,7 +13,7 @@ from ops.utils import img_rotation, proj, crop_img, ffill
 
 # Settings
 output_size = 512
-fp_name = './data_CNN/Data_sup_bathy_1.1/'
+fp_name = './data_CNN/Data_bathy_sup_1.1/'
 df_fp_img = './data_CNN/Data_processed/meta_df.csv'
 df_fp_bat = "./data_CNN/Data_processed/Processed_bathy.csv"
 tide_min = 1.1
