@@ -161,7 +161,7 @@ class UNet():
     def callback(self):
         earlystop = EarlyStopping(patience=epoch_patience)
         cb = TimingCallback()
-        Checkpoint = ModelCheckpoint("trained_model/U_net.h5", save_best_only=True)
+        Checkpoint = ModelCheckpoint("trained_models/U_net.h5", save_best_only=True)
         if decaying_lr:
             schedule = StepDecay(initAlpha=initial_lr, factor=factor_decay, dropEvery=nb_epoch_decay)
             return([cb, earlystop, Checkpoint, LearningRateScheduler(schedule)])

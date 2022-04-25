@@ -16,8 +16,8 @@ from evaluation.Verif_functions import plot_history, check_nan_generator
 from evaluation.Metric_functions import pixel_error, absolute_error, pred_min, pred_max
 
 # 0) Initialize session
-mode = 'cpu'
-#mode = 'gpu'
+#mode = 'cpu'
+mode = 'gpu'
 start_tf_sesssion(mode)
 
 # 1) Test one model
@@ -46,7 +46,7 @@ model.summary()
 Trained_model = Unet_model.train()
 
 # Verification of the training loss
-name = 'trained_models/CNN_batch' + str(batch_size) + '_filter' + str(filters) + '_lr' + str(lr) + '_decay_' + str(factor_decay) + '_every' + str(nb_epoch_decay) + '_activ_' + str(activ) 
+name = 'trained_models/CNN_allbathy_alltide_newgen_batch' + str(batch_size) + '_filter' + str(filters) + '_lr' + str(lr) + '_decay_' + str(factor_decay) + '_every' + str(nb_epoch_decay) + '_activ_' + str(activ) 
 plot_history(Trained_model[1], name + '_bathy.png')
 
 preds = Unet_model.predict()
@@ -111,7 +111,7 @@ for i in np.arange(0, preds.shape[0], 3):
     plt.subplot(2, 2, 3)
     plt.imshow(true_img.squeeze().astype('float32'), cmap='jet', vmin=_vmin, vmax=_vmax)
     plt.subplot(2, 2, 4)
-    plt.imshow(gaussian_filter(pred_img.squeeze().astype('float32'), sigma=8), cmap='jet', vmin=_vmin, vmax=_vmax)
+    plt.imshow(gaussian_filter(pred_img.squeeze().astype('float32'), sigma=4), cmap='jet', vmin=_vmin, vmax=_vmax)
     plt.tight_layout()
     plt.show()
 
