@@ -39,7 +39,7 @@ epoch_patience = 20
 
 
 # 4) File paths
-dir_name = "Data_all"
+dir_name = "Data_sup_1.1"
 input_dir_train = "./data_CNN/" + dir_name + "/Train/Input/"
 target_dir_train = "./data_CNN/" + dir_name + "/Train/Target/"
 input_dir_val = "./data_CNN/" + dir_name + "/Train/Input/"

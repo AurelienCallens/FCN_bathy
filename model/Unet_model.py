@@ -18,13 +18,12 @@ from evaluation.Metric_functions import pixel_error, absolute_error, pred_min, p
 
 class UNet():
     """Unet Model Class"""
-    def __init__(self, size, bands, model_saved):
+    def __init__(self, size, bands):
         self.img_rows = size[0]
         self.img_cols = size[1]
         self.img_size = size
         self.bands = bands
         self.batch_size = batch_size
-        self.model_saved = model_saved
 
     def data_generator(self, split):
         if split == 'Train':
@@ -152,9 +151,6 @@ class UNet():
 
         model = Model(inputs=inputs, outputs=[conv10])
         model.compile(optimizer=optimizer, loss='mse', metrics=[absolute_error, pred_min, pred_max])
-
-        if(pretrained_weights != False):
-            model.load_weights(pretrained_weights)
 
         return(model)
 

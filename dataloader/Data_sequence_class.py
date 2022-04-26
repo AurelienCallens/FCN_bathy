@@ -54,7 +54,8 @@ class Custom_gen(keras.utils.Sequence):
 
                 # Same shift generator on first and second channels of X and on Y
                 aug_img = next(
-                    self.shift_augmentor.flow((np.expand_dims(X_img, axis=0))))
+                    self.shift_augmentor.flow((np.expand_dims(X_img, axis=0)),
+                                              shuffle=False))
                 Y_img[:] = aug_img[:, :, :, 2]
 
                 # Generator for brightness and scaling on first and second channels of X 
@@ -71,7 +72,8 @@ class Custom_gen(keras.utils.Sequence):
 
             else:
                 final_X = next(self.augmentor.flow((np.expand_dims(X_img,
-                                                                   axis=0))))
+                                                                   axis=0)),
+                                                   shuffle=False))
                 final_X = final_X.squeeze()
                 final_X[:, :, 2] = X_img[:, :, 2]
 
