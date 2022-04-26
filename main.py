@@ -11,11 +11,11 @@ from numpy.random import seed
 import tensorflow as tf
 from configs.Settings import *
 import matplotlib.pyplot as plt
-from model.Unet_model import UNet
+from model.UnetModel import UNet
 from scipy.ndimage import gaussian_filter
 from executor.tf_init import start_tf_sesssion
-from evaluation.Verif_functions import plot_history, check_nan_generator
-from evaluation.Metric_functions import pixel_error, absolute_error, pred_min, pred_max
+from evaluation.verif_functions import plot_history, check_nan_generator
+from evaluation.metric_functions import pixel_error, absolute_error, pred_min, pred_max
 import matplotlib.gridspec as gridspec
 
 
