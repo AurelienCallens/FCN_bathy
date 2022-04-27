@@ -13,7 +13,7 @@ from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, Dropout, concat
 from configs.Settings import *
 from dataloader.CustomGenerator  import CustomGenerator
 from evaluation.CallbackClasses import TimingCallback, StepDecay
-from evaluation.Metric_functions import pixel_error, absolute_error, pred_min, pred_max
+from evaluation.metric_functions import pixel_error, absolute_error, pred_min, pred_max
 
 
 class UNet():
