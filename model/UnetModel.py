@@ -34,7 +34,8 @@ class UNet():
                                    input_img_paths=train_input_img_paths,
                                    target_img_paths=train_target_img_paths,
                                    split='Train')
-
+            return(train_gen)
+        if split == 'Validation':
             val_gen = CustomGenerator(batch_size=self.batch_size,
                                  img_size=self.img_size,
                                  bands=self.bands,
@@ -42,7 +43,7 @@ class UNet():
                                  target_img_paths=val_target_img_paths,
                                  split='Validation')
 
-            return([train_gen, val_gen])
+            return(val_gen)
         else:
             test_gen = CustomGenerator(batch_size=1,
                                   img_size=self.img_size,
@@ -166,8 +167,8 @@ class UNet():
 
     def train(self):
         # Make generators object
-        train_generator, val_generator = self.data_generator('Train')
-
+        train_generator = self.data_generator('Train')
+        val_generator = self.data_generator('Validation')
         model = self.build()
         # Train the network
         history = model.fit(

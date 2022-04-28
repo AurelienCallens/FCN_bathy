@@ -19,8 +19,8 @@ from evaluation.metric_functions import pixel_error, absolute_error, pred_min, p
 
 
 # 0) Initialize session
-#mode = 'cpu'
-mode = 'gpu'
+mode = 'cpu'
+#mode = 'gpu'
 start_tf_sesssion(mode)
 
 # keras seed fixing 
@@ -38,10 +38,11 @@ model.summary()
 # Check results of train gen
 # check_nan_generator(Unet_model, split='Validation')
 test_gen = Unet_model.data_generator('Test')
-train_gen, val_gen = Unet_model.data_generator('Train')
+val_gen = Unet_model.data_generator('Validation')
+train_gen = Unet_model.data_generator('Train')
 test_gen.__len__()
-train_gen.__len__()
-val_gen.__len__()
+train_gen.__len__()*batch_size
+val_gen.__len__()*batch_size
 
 plot_output_generator(Unet_model, n_img=2)
 

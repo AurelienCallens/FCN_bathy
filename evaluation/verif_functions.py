@@ -6,17 +6,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from scipy.ndimage import gaussian_filter
+
 ## Checking no Nan in images
 def check_nan_generator(model, split):
-    train_generator, val_generator = model.data_generator('Train')
-    test_generator = model.data_generator('Test')
-    if split == 'Train':
-        img_generator = train_generator
-    elif split == 'Validation':
-        img_generator = val_generator
-    else:
-        img_generator = test_generator
-    
+
+    img_generator = model.data_generator(split)
+
     for i in range(img_generator.__len__()):
         img = img_generator.__getitem__(i)
         print(np.isnan(img[0]).any())
@@ -25,7 +20,7 @@ def check_nan_generator(model, split):
 
 ## Plot output of train generator
 def plot_output_generator(model, n_img):
-    train_gen, val_gen = model.data_generator('Train')
+    train_gen = model.data_generator('Train')
     for i in range(n_img):
         test = train_gen.__getitem__(i)
         plt.subplot(221)

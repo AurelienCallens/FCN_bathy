@@ -16,7 +16,7 @@ shift_range = 0.3
 activ = "relu"
 k_init = 'he_normal'
 pretrained_weights = False
-filters = 16
+filters = 8
 noise_std = 0.05
 drop_rate = 0.2
 
@@ -38,11 +38,11 @@ epoch_patience = 20
 
 
 # 4) File paths
-dir_name = "Data_bathy_01_18_sup_1.1"
+dir_name = "Data_sup_1.1"
 input_dir_train = "./data_CNN/" + dir_name + "/Train/Input/"
 target_dir_train = "./data_CNN/" + dir_name + "/Train/Target/"
-input_dir_val = "./data_CNN/" + dir_name + "/Train/Input/"
-target_dir_val = "./data_CNN/" + dir_name + "/Train/Target/"
+input_dir_val = "./data_CNN/" + dir_name + "/Validation/Input/"
+target_dir_val = "./data_CNN/" + dir_name + "/Validation/Target/"
 input_dir_test = "./data_CNN/" + dir_name + "/Test/Input/"
 target_dir_test = "./data_CNN/" + dir_name + "/Test/Target/"
 
