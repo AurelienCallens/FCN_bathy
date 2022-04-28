@@ -16,14 +16,14 @@ shift_range = 0.3
 activ = "relu"
 k_init = 'he_normal'
 pretrained_weights = False
-filters = 8
+filters = 4
 noise_std = 0.05
 drop_rate = 0.2
 
 # 2) FCN training parameters
 batch_size = 6
 n_epochs = 500
-lr = 0.001
+lr = 0.003
 optimizer = tf.keras.optimizers.Nadam()
 #optimizer = tf.keras.optimizers.SGD(momentum=0.9)
 
@@ -32,7 +32,7 @@ optimizer = tf.keras.optimizers.Nadam()
 decaying_lr = True
 initial_lr = lr
 factor_decay = 0.8
-nb_epoch_decay = 30
+nb_epoch_decay = 20
 # Early stopping
 epoch_patience = 20
 

@@ -36,8 +36,8 @@ test_gen = Unet_model.data_generator('Test')
 val_gen = Unet_model.data_generator('Validation')
 train_gen = Unet_model.data_generator('Train')
 test_gen.__len__()
-train_gen.__len__()*batch_size
-val_gen.__len__()*batch_size
+train_gen.__len__() * batch_size
+val_gen.__len__() * batch_size
 
 plot_output_generator(Unet_model, n_img=2)
 
