@@ -3,7 +3,6 @@
 """Different metric functions taken from Collins et al. 2021 (https://github.com/collins-frf/Celerity_Net/blob/master/losses.py)"""
 
 import tensorflow as tf
-import numpy as np
 
 def pixel_error(y_true, y_pred):
     pred = tf.cast(tf.greater(y_pred, 0.5), tf.int32, name='predictions')

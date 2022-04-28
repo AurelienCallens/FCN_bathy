@@ -8,7 +8,7 @@ Created on Thu Apr 14 08:42:59 2022
 
 import tensorflow as tf
 
-def start_tf_sesssion(mode, cpu_core=2):
+def start_tf_session(mode, cpu_core=2):
     if mode == 'cpu' and type(cpu_core) == int:
         tf.config.threading.set_intra_op_parallelism_threads(cpu_core)
         tf.config.threading.set_inter_op_parallelism_threads(cpu_core)

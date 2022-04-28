@@ -2,18 +2,15 @@
 # -*- coding: utf-8 -*-
 """Unet Model"""
 
-import random
 import tensorflow as tf
-import matplotlib.pyplot as plt
 from tensorflow.keras.models import Model
 from tensorflow.keras.callbacks import LearningRateScheduler, EarlyStopping, ModelCheckpoint
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, Dropout, concatenate, BatchNormalization, Conv2DTranspose, GaussianNoise
 
-
 from configs.Settings import *
-from dataloader.CustomGenerator  import CustomGenerator
+from evaluation.metric_functions import *
+from dataloader.CustomGenerator import CustomGenerator
 from evaluation.CallbackClasses import TimingCallback, StepDecay
-from evaluation.metric_functions import pixel_error, absolute_error, pred_min, pred_max
 
 
 class UNet():

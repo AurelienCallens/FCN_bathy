@@ -7,7 +7,9 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from scipy.ndimage import gaussian_filter
 
-## Checking no Nan in images
+# Checking no Nan in images
+
+
 def check_nan_generator(model, split):
 
     img_generator = model.data_generator(split)
@@ -18,22 +20,26 @@ def check_nan_generator(model, split):
         print(np.isnan(img[1]).any())
 
 
-## Plot output of train generator
+# Plot output of train generator
+
+
 def plot_output_generator(model, n_img):
     train_gen = model.data_generator('Train')
     for i in range(n_img):
         test = train_gen.__getitem__(i)
         plt.subplot(221)
-        plt.imshow(test[0][0][:,:,0].astype(np.float32), cmap='gray')
+        plt.imshow(test[0][0][:, :, 0].astype(np.float32), cmap='gray')
         plt.subplot(222)
-        plt.imshow(test[0][0][:,:,1].astype(np.float32), cmap='gray')
+        plt.imshow(test[0][0][:, :, 1].astype(np.float32), cmap='gray')
         plt.subplot(223)
-        plt.imshow(test[0][0][:,:,2].astype(np.float32))
+        plt.imshow(test[0][0][:, :, 2].astype(np.float32))
         plt.subplot(224)
         plt.imshow(test[1][0].squeeze().astype(np.float32))
         plt.show()
 
-## Plot history
+# Plot history
+
+
 def plot_history(history):
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
@@ -43,15 +49,18 @@ def plot_history(history):
     plt.legend(['train', 'validation'], loc='upper left')
     plt.show()
 
-## Plot predictions
+
+# Plot predictions
+
+
 def plot_predictions(test_generator, predictions, every_n):
-    
+
     for i in np.arange(0, predictions.shape[0], 1):
         cond_img = test_generator.__getitem__(i)[0]
         true_img = test_generator.__getitem__(i)[1]
         pred_img = predictions[i, :, :, :]
         _vmin, _vmax = np.min(true_img)-1, np.max(true_img)+1
-        
+
         fig = plt.figure(figsize=(10, 8))
         gs = gridspec.GridSpec(2, 6)
         gs.update(wspace=0.8, hspace=0.5)

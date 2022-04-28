@@ -5,23 +5,18 @@ Created on Thu Mar 24 13:43:32 2022
 
 @author: aurelien
 """
-
-import numpy as np
-from numpy.random import seed
 import tensorflow as tf
+from numpy.random import seed
 from configs.Settings import *
-import matplotlib.pyplot as plt
 from model.UnetModel import UNet
-from executor.tf_init import start_tf_sesssion
 from evaluation.verif_functions import *
-from evaluation.metric_functions import pixel_error, absolute_error, pred_min, pred_max
-
-
+from evaluation.metric_functions import *
+from executor.tf_init import start_tf_session
 
 # 0) Initialize session
 mode = 'cpu'
 #mode = 'gpu'
-start_tf_sesssion(mode)
+start_tf_session(mode)
 
 # keras seed fixing 
 seed(42)

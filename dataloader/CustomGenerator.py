@@ -17,8 +17,10 @@ class CustomGenerator(keras.utils.Sequence):
         self.target_img_paths = target_img_paths
         self.bands = bands
         self.split = split
+
         if split in ['Validation', 'Test']:
             self.augmentor = ImageDataGenerator(rescale=1/255)
+
         elif split == 'Train':
             self.augmentor = ImageDataGenerator(brightness_range=brightness_r,
                                                 rescale=1/255)
@@ -52,23 +54,16 @@ class CustomGenerator(keras.utils.Sequence):
                 cond = np.copy(X_img[:, :, 2])
                 X_img[:, :, 2] = Y_img
 
-                # Same shift generator on first and second channels of X and on Y
+                # Same shift generator on 1st and 2nd channels of X and on Y
                 aug_img = next(
                     self.shift_augmentor.flow((np.expand_dims(X_img, axis=0)),
                                               shuffle=False))
                 Y_img[:] = aug_img[:, :, :, 2]
 
-                # Generator for brightness and scaling on first and second channels of X 
+                # Generator for brightness + scaling on 1st, 2nd channels of X
                 aug_img_2 = next(self.augmentor.flow((aug_img)))
                 final_X = aug_img_2.squeeze()
                 final_X[:, :, 2] = cond
-
-                # plt.imshow(final_img[:,:,0], cmap = 'gray' )
-                # plt.imshow(final_img[:,:,1], cmap = 'gray' )
-                # plt.imshow(final_img[:,:,2], cmap = 'gray' )
-                # plt.imshow(Y_img.squeeze(), cmap = 'gray' )
-                # (aug_img[:,:,2] == img[:,:,2]).all()
-                # plt.imshow(aug_img)
 
             else:
                 final_X = next(self.augmentor.flow((np.expand_dims(X_img,
