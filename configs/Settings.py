@@ -23,7 +23,7 @@ drop_rate = 0.2
 # 2) FCN training parameters
 batch_size = 6
 n_epochs = 500
-lr = 0.001
+lr = 0.002
 optimizer = tf.keras.optimizers.Nadam()
 #optimizer = tf.keras.optimizers.SGD(momentum=0.9)
 
@@ -38,7 +38,7 @@ epoch_patience = 20
 
 
 # 4) File paths
-dir_name = "Data_bathy_01_18_sup_1.1"
+dir_name = "Data_sup_1.1_inf_3.5"
 input_dir_train = "./data_CNN/" + dir_name + "/Train/Input/"
 target_dir_train = "./data_CNN/" + dir_name + "/Train/Target/"
 input_dir_val = "./data_CNN/" + dir_name + "/Validation/Input/"
