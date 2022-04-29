@@ -3,7 +3,7 @@
 """
 Function taken from : https://stackoverflow.com/questions/58785715/training-gan-in-keras-with-fit-generator?noredirect=1&lq=1
 """
-
+import numpy as np
 import multiprocessing.dummy as mp
 
 #A generator that wraps a Keras Sequence and simulates a `fit_generator` behavior for custom training loops

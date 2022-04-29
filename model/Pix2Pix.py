@@ -5,33 +5,50 @@ Pix2pix model mostly taken from : https://github.com/eriklindernoren/Keras-GAN/b
 """
 
 from __future__ import print_function, division
-import scipy
+
+
+import os
+import datetime
+import numpy as np
+import matplotlib.pyplot as plt
+from configs.Settings import *
+from dataloader.CustomGenerator import CustomGenerator
+from dataloader.seq_iterator_gan import ParallelIterator
+
 from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, Concatenate
 from tensorflow.keras.layers import BatchNormalization, Activation, ZeroPadding2D
-from tensorflow.keras.layers import LeakyReLU
-from tensorflow.keras.layers import UpSampling2D, Conv2D
+from tensorflow.keras.layers import LeakyReLU, UpSampling2D, Conv2D
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.optimizers import Adam
-import datetime
-import matplotlib.pyplot as plt
-import sys
-import numpy as np
-import os
+
+
+
 
 class Pix2Pix():
     def __init__(self):
         # Input shape
-        self.img_rows = 256
-        self.img_cols = 256
-        self.channels = 3
+        self.img_rows = img_size[0]
+        self.img_cols = img_size[1]
+        self.channels = n_channels
+        self.batch_size = 1
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
 
-        # Configure data loader
-        self.dataset_name = 'facades'
-        self.data_loader = DataLoader(dataset_name=self.dataset_name,
-                                      img_res=(self.img_rows, self.img_cols))
+        # Configure data sequence generator
+        self.dataset_name = 'test_res'
+        self.train_gen = CustomGenerator(batch_size=self.batch_size,
+                               img_size=img_size,
+                               bands=self.channels,
+                               input_img_paths=train_input_img_paths+val_input_img_paths,
+                               target_img_paths=train_target_img_paths+val_target_img_paths,
+                               split='Train')
 
-
+        self.test_gen = CustomGenerator(batch_size=self.batch_size,
+                               img_size=img_size,
+                               bands=self.channels,
+                               input_img_paths=test_input_img_paths,
+                               target_img_paths=test_target_img_paths,
+                               split='Test')
+        
         # Calculate output shape of D (PatchGAN)
         patch = int(self.img_rows / 2**4)
         self.disc_patch = (patch, patch, 1)
@@ -41,12 +58,12 @@ class Pix2Pix():
         self.df = 64
 
         optimizer = Adam(0.0002, 0.5)
-        
+
         # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
         self.discriminator.compile(loss='mse',
-            optimizer=optimizer,
-            metrics=['accuracy'])
+                                   optimizer=optimizer,
+                                   metrics=['accuracy'])
 
         #-------------------------
         # Construct Computational
@@ -57,8 +74,8 @@ class Pix2Pix():
         self.generator = self.build_generator()
 
         # Input images and their conditioning images
-        img_A = Input(shape=self.img_shape)
-        img_B = Input(shape=self.img_shape)
+        img_A = Input(shape=(512, 512, 1))
+        img_B = Input(shape=(512, 512, 3))
 
         # By conditioning on B generate a fake version of A
         fake_A = self.generator(img_B)
@@ -96,7 +113,7 @@ class Pix2Pix():
             return u
 
         # Image input
-        d0 = Input(shape=self.img_shape)
+        d0 = Input(shape=(512, 512, 3))
 
         # Downsampling
         d1 = conv2d(d0, self.gf, bn=False)
@@ -130,8 +147,8 @@ class Pix2Pix():
                 d = BatchNormalization(momentum=0.8)(d)
             return d
 
-        img_A = Input(shape=self.img_shape)
-        img_B = Input(shape=self.img_shape)
+        img_A = Input(shape=(512, 512, 1))
+        img_B = Input(shape=(512, 512, 3))
 
         # Concatenate image and conditioning image by channels to produce input
         combined_imgs = Concatenate(axis=-1)([img_A, img_B])
@@ -153,45 +170,51 @@ class Pix2Pix():
         valid = np.ones((batch_size,) + self.disc_patch)
         fake = np.zeros((batch_size,) + self.disc_patch)
 
-        for epoch in range(epochs):
-            for batch_i, (imgs_A, imgs_B) in enumerate(self.data_loader.load_batch(batch_size)):
+        for epoch, batchIndex, originalBatchIndex, xAndY in ParallelIterator(
+                                       self.train_gen,
+                                       epochs,
+                                       shuffle=False,
+                                       use_on_epoch_end=True,
+                                       workers = 8,
+                                       queue_size=10):
+            imgs_B, imgs_A = xAndY
+            
+            # ---------------------
+            #  Train Discriminator
+            # ---------------------
 
-                # ---------------------
-                #  Train Discriminator
-                # ---------------------
+            # Condition on B and generate a translated version
+            fake_A = self.generator.predict(imgs_B)
 
-                # Condition on B and generate a translated version
-                fake_A = self.generator.predict(imgs_B)
+            # Train the discriminators (original images = real / generated = Fake)
+            d_loss_real = self.discriminator.train_on_batch([imgs_A, imgs_B], valid)
+            d_loss_fake = self.discriminator.train_on_batch([fake_A, imgs_B], fake)
+            d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
 
-                # Train the discriminators (original images = real / generated = Fake)
-                d_loss_real = self.discriminator.train_on_batch([imgs_A, imgs_B], valid)
-                d_loss_fake = self.discriminator.train_on_batch([fake_A, imgs_B], fake)
-                d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
+            # -----------------
+            #  Train Generator
+            # -----------------
 
-                # -----------------
-                #  Train Generator
-                # -----------------
+            # Train the generators
+            g_loss = self.combined.train_on_batch([imgs_A, imgs_B], [valid, imgs_A])
 
-                # Train the generators
-                g_loss = self.combined.train_on_batch([imgs_A, imgs_B], [valid, imgs_A])
+            elapsed_time = datetime.datetime.now() - start_time
+            # Plot the progress
+            print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch, epochs,
+                                                                    batchIndex, originalBatchIndex,
+                                                                    d_loss[0], 100*d_loss[1],
+                                                                    g_loss[0],
+                                                                    elapsed_time))
 
-                elapsed_time = datetime.datetime.now() - start_time
-                # Plot the progress
-                print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch, epochs,
-                                                                        batch_i, self.data_loader.n_batches,
-                                                                        d_loss[0], 100*d_loss[1],
-                                                                        g_loss[0],
-                                                                        elapsed_time))
-
-                # If at save interval => save generated image samples
-                if batch_i % sample_interval == 0:
-                    self.sample_images(epoch, batch_i)
+            # If at save interval => save generated image samples
+            if batch_i % sample_interval == 0:
+                self.sample_images(epoch, batch_i)
 
     def sample_images(self, epoch, batch_i):
         os.makedirs('images/%s' % self.dataset_name, exist_ok=True)
         r, c = 3, 3
 
-        imgs_A, imgs_B = self.data_loader.load_data(batch_size=3, is_testing=True)
+        imgs_A, imgs_B = self.test_gen.__getitem__(epoch)
         fake_A = self.generator.predict(imgs_B)
 
         gen_imgs = np.concatenate([imgs_B, fake_A, imgs_A])
@@ -210,3 +233,6 @@ class Pix2Pix():
                 cnt += 1
         fig.savefig("images/%s/%d_%d.png" % (self.dataset_name, epoch, batch_i))
         plt.close()
+
+network = Pix2Pix()
+network.train(epochs=200, batch_size=1, sample_interval=200)
