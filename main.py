@@ -14,8 +14,8 @@ from evaluation.metric_functions import *
 from executor.tf_init import start_tf_session
 
 # 0) Initialize session
-mode = 'cpu'
-#mode = 'gpu'
+#mode = 'cpu'
+mode = 'gpu'
 start_tf_session(mode)
 
 # keras seed fixing 
@@ -46,7 +46,7 @@ plot_output_generator(Unet_model, n_img=2)
 Trained_model = Unet_model.train()
 
 # Verification of the training loss
-name = 'trained_models/Model_1'
+name = 'trained_models/Model_3'
 plot_history(Trained_model[1])
 
 preds = Unet_model.predict()
