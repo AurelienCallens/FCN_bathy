@@ -14,8 +14,8 @@ from evaluation.metric_functions import *
 from executor.tf_init import start_tf_session
 
 # 0) Initialize session
-mode = 'cpu'
-#mode = 'gpu'
+#mode = 'cpu'
+mode = 'gpu'
 start_tf_session(mode)
 
 # keras seed fixing 
@@ -53,7 +53,7 @@ preds = Unet_model.predict()
 test_gen = Unet_model.data_generator('Test')
 Trained_model[0].evaluate(test_gen)
 
-plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
+plot_predictions(test_generator=test_gen, predictions=preds, every_n=4)
 
 tf.keras.models.save_model(Trained_model[0], name)
 
