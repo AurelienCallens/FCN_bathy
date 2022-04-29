@@ -15,7 +15,7 @@ from configs.Settings import *
 from dataloader.CustomGenerator import CustomGenerator
 from dataloader.seq_iterator_gan import ParallelIterator
 
-from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, Concatenate
+from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, concatenate
 from tensorflow.keras.layers import BatchNormalization, Activation, ZeroPadding2D
 from tensorflow.keras.layers import LeakyReLU, UpSampling2D, Conv2D
 from tensorflow.keras.models import Sequential, Model
@@ -30,7 +30,7 @@ class Pix2Pix():
         self.img_rows = img_size[0]
         self.img_cols = img_size[1]
         self.channels = n_channels
-        self.batch_size = 1
+        self.batch_size = 6
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
 
         # Configure data sequence generator
@@ -54,8 +54,8 @@ class Pix2Pix():
         self.disc_patch = (patch, patch, 1)
 
         # Number of filters in the first layer of G and D
-        self.gf = 64
-        self.df = 64
+        self.gf = 16
+        self.df = 8
 
         optimizer = Adam(0.0002, 0.5)
 
@@ -74,8 +74,8 @@ class Pix2Pix():
         self.generator = self.build_generator()
 
         # Input images and their conditioning images
-        img_A = Input(shape=(512, 512, 1))
-        img_B = Input(shape=(512, 512, 3))
+        img_A = Input(shape=(512, 512, 1), name='target_image')
+        img_B = Input(shape=(512, 512, 3), name='input_image')
 
         # By conditioning on B generate a fake version of A
         fake_A = self.generator(img_B)
@@ -109,7 +109,7 @@ class Pix2Pix():
             if dropout_rate:
                 u = Dropout(dropout_rate)(u)
             u = BatchNormalization(momentum=0.8)(u)
-            u = Concatenate()([u, skip_input])
+            u = concatenate([u, skip_input])
             return u
 
         # Image input
@@ -133,7 +133,7 @@ class Pix2Pix():
         u6 = deconv2d(u5, d1, self.gf)
 
         u7 = UpSampling2D(size=2)(u6)
-        output_img = Conv2D(self.channels, kernel_size=4, strides=1, padding='same', activation='tanh')(u7)
+        output_img = Conv2D(1, kernel_size=4, strides=1, padding='same', activation='linear')(u7)
 
         return Model(d0, output_img)
 
@@ -147,12 +147,11 @@ class Pix2Pix():
                 d = BatchNormalization(momentum=0.8)(d)
             return d
 
-        img_A = Input(shape=(512, 512, 1))
-        img_B = Input(shape=(512, 512, 3))
+        img_A = Input(shape=[512, 512, 1], name='target_image')
+        img_B = Input(shape=[512, 512, 3], name='input_image')
 
         # Concatenate image and conditioning image by channels to produce input
-        combined_imgs = Concatenate(axis=-1)([img_A, img_B])
-
+        combined_imgs = concatenate([img_A, img_B])
         d1 = d_layer(combined_imgs, self.df, bn=False)
         d2 = d_layer(d1, self.df*2)
         d3 = d_layer(d2, self.df*4)
@@ -201,14 +200,14 @@ class Pix2Pix():
             elapsed_time = datetime.datetime.now() - start_time
             # Plot the progress
             print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch, epochs,
-                                                                    batchIndex, originalBatchIndex,
+                                                                    batchIndex, self.train_gen.__len__(),
                                                                     d_loss[0], 100*d_loss[1],
                                                                     g_loss[0],
                                                                     elapsed_time))
 
             # If at save interval => save generated image samples
-            if batch_i % sample_interval == 0:
-                self.sample_images(epoch, batch_i)
+            #if batchIndex % sample_interval == 0:
+            #    self.sample_images(epoch, batchIndex)
 
     def sample_images(self, epoch, batch_i):
         os.makedirs('images/%s' % self.dataset_name, exist_ok=True)
@@ -235,4 +234,12 @@ class Pix2Pix():
         plt.close()
 
 network = Pix2Pix()
-network.train(epochs=200, batch_size=1, sample_interval=200)
+network.discriminator.summary()
+network.generator.summary()
+network.batch_size
+
+network.train(100, batch_size=1, sample_interval=50)
+test_img = network.test_gen.__getitem__(2)
+img = network.generator.predict(test_img[0])
+plt.imshow(img[0].squeeze(), cmap = 'jet')
+plt.imshow(test_img [1][0][:,:,0].astype(np.float32), cmap = 'jet')
