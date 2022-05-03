@@ -163,7 +163,7 @@ class Pix2Pix():
 
         return Model([img_A, img_B], validity)
 
-    def train(self, epochs, batch_size=1, sample_interval=50):
+    def train(self, epochs, batch_size=1, sample_interval=5, img_index=1):
 
         start_time = datetime.datetime.now()
 
@@ -201,48 +201,53 @@ class Pix2Pix():
 
             elapsed_time = datetime.datetime.now() - start_time
             # Plot the progress
-            print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch, epochs,
-                                                                    batchIndex, self.train_gen.__len__(),
+            #if ((batchIndex + 1) == self.train_gen.__len__()) and (epoch % sample_interval == 0):
+            if ((batchIndex + 1) % 5 ==0):
+                print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch, epochs,
+                                                                    batchIndex+1, self.train_gen.__len__(),
                                                                     d_loss[0], 100*d_loss[1],
                                                                     g_loss[0],
                                                                     elapsed_time))
+                self.sample_images(img_ind=img_index)
 
-            # If at save interval => save generated image samples
-            #if batchIndex % sample_interval == 0:
-            #    self.sample_images(epoch, batchIndex)
+    def sample_images(self, img_ind):
+        #os.makedirs('images/%s' % self.dataset_name, exist_ok=True)
+        c = 3
 
-    def sample_images(self, epoch, batch_i):
-        os.makedirs('images/%s' % self.dataset_name, exist_ok=True)
-        r, c = 3, 3
-
-        imgs_A, imgs_B = self.test_gen.__getitem__(epoch)
+        imgs_B, imgs_A = self.test_gen.__getitem__(img_ind)
         fake_A = self.generator.predict(imgs_B)
+        imgs_A = imgs_A.squeeze()
+        imgs_B = imgs_B
+        fake_A = fake_A.squeeze()
 
-        gen_imgs = np.concatenate([imgs_B, fake_A, imgs_A])
-
-        # Rescale images 0 - 1
-        gen_imgs = 0.5 * gen_imgs + 0.5
-
-        titles = ['Condition', 'Generated', 'Original']
-        fig, axs = plt.subplots(r, c)
+        gen_imgs = [imgs_B, imgs_A, fake_A]
+        
+        _vmin, _vmax = np.min(imgs_A)-1, np.max(imgs_A)+1
+        titles = ['Condition', 'Original', 'Generated']
+        fig, axs = plt.subplots(1, c)
         cnt = 0
-        for i in range(r):
-            for j in range(c):
-                axs[i,j].imshow(gen_imgs[cnt])
-                axs[i, j].set_title(titles[i])
-                axs[i,j].axis('off')
-                cnt += 1
-        fig.savefig("images/%s/%d_%d.png" % (self.dataset_name, epoch, batch_i))
-        plt.close()
+        for j in range(c):
+            if (titles[j] == 'Condition'):
+                axs[j].imshow(gen_imgs[cnt].squeeze().astype(np.float32))
+            else:
+                axs[j].imshow(gen_imgs[cnt].astype(np.float32), cmap='jet', vmin=_vmin, vmax=_vmax)
+            axs[j].set_title(titles[j])
+            axs[j].axis('off')
+            cnt += 1
+        #fig.savefig("images/%s/%d_%d.png" % (self.dataset_name, img_ind))
+        plt.show()
 
 network = Pix2Pix()
 network.discriminator.summary()
 network.generator.summary()
 network.batch_size
 network.disc_patch
+network.sample_images(1)
 
-network.train(2, batch_size=1, sample_interval=50)
-test_img = network.train_gen.__getitem__(0)
-img = network.generator.predict(test_img[0])
-plt.imshow(img[0].squeeze(), cmap = 'jet')
-plt.imshow(test_img [1][0][:,:,0].astype(np.float32), cmap = 'jet')
+
+network.train(2, batch_size=1, sample_interval=1, img_index=1)
+imgs_B, imgs_A = network.test_gen.__getitem__(0)
+fake_A = network.generator.predict(imgs_B)
+plt.imshow(fake_A.squeeze(), cmap = 'jet')
+plt.imshow(imgs_A.squeeze().astype(np.float32), cmap = 'jet')
+plt.imshow(imgs_B.squeeze().astype(np.float32))
