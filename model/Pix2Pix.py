@@ -16,7 +16,7 @@ from dataloader.CustomGenerator import CustomGenerator
 from dataloader.seq_iterator_gan import ParallelIterator
 
 from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, concatenate
-from tensorflow.keras.layers import BatchNormalization, Activation, ZeroPadding2D
+from tensorflow.keras.layers import BatchNormalization, Activation, ZeroPadding2D, GaussianNoise
 from tensorflow.keras.layers import LeakyReLU, UpSampling2D, Conv2D
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.optimizers import Adam
@@ -30,9 +30,9 @@ class Pix2Pix():
         self.img_rows = img_size[0]
         self.img_cols = img_size[1]
         self.channels = n_channels
-        self.batch_size = 6
+        self.batch_size = 1
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
-
+        
         # Configure data sequence generator
         self.dataset_name = 'test_res'
         self.train_gen = CustomGenerator(batch_size=self.batch_size,
@@ -48,15 +48,15 @@ class Pix2Pix():
                                input_img_paths=test_input_img_paths,
                                target_img_paths=test_target_img_paths,
                                split='Test')
-        
         # Calculate output shape of D (PatchGAN)
         patch = int(self.img_rows / 2**4)
         self.disc_patch = (patch, patch, 1)
 
         # Number of filters in the first layer of G and D
-        self.gf = 16
-        self.df = 8
-
+        self.gf = 12
+        self.df = 3
+        self.noise_std = 0.05
+        self.drop_rate = 0.1
         optimizer = Adam(0.0002, 0.5)
 
         # Build and compile the discriminator
@@ -142,6 +142,8 @@ class Pix2Pix():
         def d_layer(layer_input, filters, f_size=4, bn=True):
             """Discriminator layer"""
             d = Conv2D(filters, kernel_size=f_size, strides=2, padding='same')(layer_input)
+            d = GaussianNoise(self.noise_std)(d)
+            d = Dropout(self.drop_rate)(d)
             d = LeakyReLU(alpha=0.2)(d)
             if bn:
                 d = BatchNormalization(momentum=0.8)(d)
@@ -174,10 +176,10 @@ class Pix2Pix():
                                        epochs,
                                        shuffle=False,
                                        use_on_epoch_end=True,
-                                       workers = 8,
+                                       workers=8,
                                        queue_size=10):
             imgs_B, imgs_A = xAndY
-            
+
             # ---------------------
             #  Train Discriminator
             # ---------------------
@@ -237,9 +239,10 @@ network = Pix2Pix()
 network.discriminator.summary()
 network.generator.summary()
 network.batch_size
+network.disc_patch
 
-network.train(100, batch_size=1, sample_interval=50)
-test_img = network.test_gen.__getitem__(2)
+network.train(2, batch_size=1, sample_interval=50)
+test_img = network.train_gen.__getitem__(0)
 img = network.generator.predict(test_img[0])
 plt.imshow(img[0].squeeze(), cmap = 'jet')
 plt.imshow(test_img [1][0][:,:,0].astype(np.float32), cmap = 'jet')

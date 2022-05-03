@@ -14,14 +14,14 @@ from evaluation.metric_functions import *
 from executor.tf_init import start_tf_session
 
 # 0) Initialize session
-#mode = 'cpu'
-mode = 'gpu'
+mode = 'cpu'
+#mode = 'gpu'
 start_tf_session(mode)
 
-# keras seed fixing 
+# keras seed fixing
 seed(42)
 # tensorflow seed fixing
-tf.random.set_seed(42) 
+tf.random.set_seed(42)
 
 # 1) Test one model
 Unet_model = UNet(size=img_size, bands=n_channels)
@@ -59,7 +59,7 @@ tf.keras.models.save_model(Trained_model[0], name)
 
 
 # 2) Load a model
-Trained_model = tf.keras.models.load_model('trained_models/CNN_allbathy_newgen_batch6_filter16_lr0.001_decay_0.8_every40_activ_relu_bathy',
+Trained_model = tf.keras.models.load_model('trained_models/Model_1',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'pred_min':pred_min,
                                                            'pred_max':pred_max},
