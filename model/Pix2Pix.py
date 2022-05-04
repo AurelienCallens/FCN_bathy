@@ -30,7 +30,7 @@ class Pix2Pix():
         self.img_rows = img_size[0]
         self.img_cols = img_size[1]
         self.channels = n_channels
-        self.batch_size = 1
+        self.batch_size = 6
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
         
         # Configure data sequence generator
@@ -42,7 +42,7 @@ class Pix2Pix():
                                target_img_paths=train_target_img_paths+val_target_img_paths,
                                split='Train')
 
-        self.test_gen = CustomGenerator(batch_size=self.batch_size,
+        self.test_gen = CustomGenerator(batch_size=1,
                                img_size=img_size,
                                bands=self.channels,
                                input_img_paths=test_input_img_paths,
@@ -53,10 +53,10 @@ class Pix2Pix():
         self.disc_patch = (patch, patch, 1)
 
         # Number of filters in the first layer of G and D
-        self.gf = 12
-        self.df = 3
+        self.gf = 16
+        self.df = 8
         self.noise_std = 0.05
-        self.drop_rate = 0.1
+        self.drop_rate = 0.2
         optimizer = Adam(0.0002, 0.5)
 
         # Build and compile the discriminator
@@ -201,8 +201,8 @@ class Pix2Pix():
 
             elapsed_time = datetime.datetime.now() - start_time
             # Plot the progress
-            #if ((batchIndex + 1) == self.train_gen.__len__()) and (epoch % sample_interval == 0):
-            if ((batchIndex + 1) % 5 ==0):
+            if ((batchIndex + 1) == self.train_gen.__len__()) and (epoch % sample_interval == 0):
+            #if ((batchIndex + 1) % 5 ==0):
                 print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch, epochs,
                                                                     batchIndex+1, self.train_gen.__len__(),
                                                                     d_loss[0], 100*d_loss[1],
@@ -211,43 +211,55 @@ class Pix2Pix():
                 self.sample_images(img_ind=img_index)
 
     def sample_images(self, img_ind):
-        #os.makedirs('images/%s' % self.dataset_name, exist_ok=True)
-        c = 3
 
         imgs_B, imgs_A = self.test_gen.__getitem__(img_ind)
         fake_A = self.generator.predict(imgs_B)
         imgs_A = imgs_A.squeeze()
-        imgs_B = imgs_B
+        imgs_B = imgs_B.squeeze()
         fake_A = fake_A.squeeze()
 
-        gen_imgs = [imgs_B, imgs_A, fake_A]
-        
         _vmin, _vmax = np.min(imgs_A)-1, np.max(imgs_A)+1
-        titles = ['Condition', 'Original', 'Generated']
-        fig, axs = plt.subplots(1, c)
-        cnt = 0
-        for j in range(c):
-            if (titles[j] == 'Condition'):
-                axs[j].imshow(gen_imgs[cnt].squeeze().astype(np.float32))
-            else:
-                axs[j].imshow(gen_imgs[cnt].astype(np.float32), cmap='jet', vmin=_vmin, vmax=_vmax)
-            axs[j].set_title(titles[j])
-            axs[j].axis('off')
-            cnt += 1
-        #fig.savefig("images/%s/%d_%d.png" % (self.dataset_name, img_ind))
+
+        fig = plt.figure(figsize=(10, 8))
+        gs = gridspec.GridSpec(2, 6)
+        gs.update(wspace=0.8, hspace=0.5)
+        ax1 = fig.add_subplot(gs[0, :2], )
+        ax1.imshow(np.uint8(imgs_B[:, :, 0]*255), cmap='gray')
+        ax2 = fig.add_subplot(gs[0, 2:4])
+        ax2.imshow(np.uint8(imgs_B[:, :, 1]*255), cmap='gray')
+        ax3 = fig.add_subplot(gs[0, 4:])
+        ax3.imshow(np.uint8(imgs_B[:, :, 2]*255), cmap='gray')
+        ax4 = fig.add_subplot(gs[1, 0:3])
+        im = ax4.imshow(imgs_A.astype('float32'), cmap='jet', vmin=_vmin, vmax=_vmax)
+        plt.colorbar(im, ax=ax4)
+        ax5 = fig.add_subplot(gs[1, 3:])
+        im = ax5.imshow(gaussian_filter(fake_A.astype('float32'), sigma=6), cmap='jet', vmin=_vmin, vmax=_vmax)
+        plt.colorbar(im, ax=ax5)
+        ax1.title.set_text('Mean RGB Snap')
+        ax2.title.set_text('Mean RGB Timex')
+        ax3.title.set_text('Env. Cond.')
+        ax4.title.set_text('True bathy')
+        ax5.title.set_text('Pred. bathy')
         plt.show()
+        
 
 network = Pix2Pix()
 network.discriminator.summary()
 network.generator.summary()
 network.batch_size
 network.disc_patch
-network.sample_images(1)
+network.sample_images(11)
 
 
-network.train(2, batch_size=1, sample_interval=1, img_index=1)
+
+network.train(epochs=100, batch_size=6, sample_interval=1, img_index=45)
+network.sample_images(6)
+
 imgs_B, imgs_A = network.test_gen.__getitem__(0)
 fake_A = network.generator.predict(imgs_B)
 plt.imshow(fake_A.squeeze(), cmap = 'jet')
 plt.imshow(imgs_A.squeeze().astype(np.float32), cmap = 'jet')
 plt.imshow(imgs_B.squeeze().astype(np.float32))
+
+
+tf.keras.models.save_model(network.generator, 'cGAN_1_data_sup_1.1_bathy_01_31')

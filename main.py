@@ -14,8 +14,8 @@ from evaluation.metric_functions import *
 from executor.tf_init import start_tf_session
 
 # 0) Initialize session
-mode = 'cpu'
-#mode = 'gpu'
+#mode = 'cpu'
+mode = 'gpu'
 start_tf_session(mode)
 
 # keras seed fixing
