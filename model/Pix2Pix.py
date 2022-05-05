@@ -22,8 +22,6 @@ from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.optimizers import Adam
 
 
-
-
 class Pix2Pix():
     def __init__(self):
         # Input shape

@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from rasterio.crs import CRS
 from scipy.interpolate import griddata
-from ops.utils import img_rotation, proj
+from ops.img_processing import img_rotation, proj
 from rasterio.plot import show
 from shapely.geometry import Point
 

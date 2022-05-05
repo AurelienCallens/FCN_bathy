@@ -9,11 +9,11 @@ from rasterio.crs import CRS
 from shapely.geometry import Point
 from scipy.interpolate import griddata
 from sklearn.preprocessing import MinMaxScaler
-from ops.utils import img_rotation, proj, crop_img, ffill
+from ops.img_processing import img_rotation, proj, crop_img, ffill
 
 # Settings
 output_size = 512
-fp_name = './data_CNN/Data_bathy_sup_1.1/'
+fp_name = './data_CNN/Data_bathy_01_18_sup_1.1/'
 df_fp_img = './data_CNN/Data_processed/meta_df.csv'
 df_fp_bat = "./data_CNN/Data_processed/Processed_bathy.csv"
 tide_min = 1.1
@@ -45,7 +45,7 @@ final_df.loc[ind, 'Split'] = 'Validation'
 final_df['Split'] = 'Train'
 
 ##### Test
-bathy_test = '2021-06-21'
+bathy_test = '2018-01-31'
 final_df.loc[final_df['bathy'].apply(lambda x: x == bathy_test), 'Split'] = 'Test'
 
 ##### Validation
