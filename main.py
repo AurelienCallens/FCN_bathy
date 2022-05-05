@@ -14,8 +14,8 @@ from evaluation.metric_functions import *
 from executor.tf_init import start_tf_session
 
 # 0) Initialize session
-#mode = 'cpu'
-mode = 'gpu'
+mode = 'cpu'
+#mode = 'gpu'
 start_tf_session(mode)
 
 # keras seed fixing
@@ -59,11 +59,11 @@ tf.keras.models.save_model(Trained_model[0], name)
 
 
 # 2) Load a model
-Trained_model = tf.keras.models.load_model('trained_models/Model_1',
+Trained_model = tf.keras.models.load_model('trained_models/Model_2',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'pred_min':pred_min,
                                                            'pred_max':pred_max},
-                                           compile=False)
+                                           compile=True)
 
 Trained_model.compile(optimizer=optimizer, loss='mse', metrics=[absolute_error, pred_min, pred_max])
 
