@@ -10,21 +10,25 @@ from scipy.ndimage import gaussian_filter
 # Checking no Nan in images
 
 
-def check_nan_generator(model, split):
+def check_nan_generator(img_generator):
 
-    img_generator = model.data_generator(split)
-
+    img_generator
+    res_input = []
+    res_target = []
     for i in range(img_generator.__len__()):
         img = img_generator.__getitem__(i)
-        print(np.isnan(img[0]).any())
-        print(np.isnan(img[1]).any())
+        res_input.append(np.isnan(img[0]).any())
+        res_target.append(np.isnan(img[1]).any())
+    if sum(res_input) != 0 or sum(res_target) != 0:
+        print("Nan in pixel values!")
+    else:
+        print("No Nan values in images!")
 
 
 # Plot output of train generator
 
 
-def plot_output_generator(model, n_img):
-    train_gen = model.data_generator('Train')
+def plot_output_generator(train_gen, n_img):
     for i in range(n_img):
         test = train_gen.__getitem__(i)
         plt.subplot(221)

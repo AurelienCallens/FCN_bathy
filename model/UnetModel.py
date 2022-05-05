@@ -11,7 +11,7 @@ from configs.Settings import *
 from evaluation.metric_functions import *
 from dataloader.CustomGenerator import CustomGenerator
 from evaluation.CallbackClasses import TimingCallback, StepDecay
-
+from evaluation.verif_functions import plot_output_generator, check_nan_generator
 
 class UNet():
     """Unet Model Class"""
@@ -52,6 +52,30 @@ class UNet():
 
     def build(self):
 
+        def conv_block(input_layer, filters, drop_out=True):
+            conv = Conv2D(filters=filters, **conv_args)(input_layer)
+            conv = BatchNormalization(trainable=True)(conv)
+            conv = Conv2D(filters=filters, **conv_args)(conv)
+            conv = BatchNormalization(trainable=True)(conv)
+            conv = GaussianNoise(noise_std)(conv)
+            if drop_out:
+                conv = Dropout(drop_rate)(conv, training=True)
+            return conv
+
+        def encoder_block(input_layer, num_filters, drop_out=True):
+            conv_b = conv_block(input_layer, num_filters, drop_out)
+            pool = MaxPooling2D((2, 2))(conv_b)
+            return conv_b, pool
+
+        def decoder_block(input_layer, skip_features, num_filters):
+            x = Conv2DTranspose(num_filters, (2, 2), strides=2, padding="same")(input_layer)
+            x = BatchNormalization(trainable=True)(x)
+            x = GaussianNoise(noise_std)(x)
+            x = Dropout(drop_rate)(x, training=True)
+            x = concatenate([x, skip_features], axis=3)
+            x = conv_block(x, num_filters, drop_out=False)
+            return x
+
         conv_args = {"kernel_size": 3,
                      "activation": activ,
                      "padding": 'same',
@@ -60,95 +84,23 @@ class UNet():
 
         inputs = Input((self.img_rows, self.img_cols, self.bands))
 
-        # Conv 1
-        conv1 = Conv2D(filters=filters, **conv_args)(inputs)
-        conv1 = BatchNormalization(trainable=True)(conv1)
-        conv1 = Conv2D(filters=filters, **conv_args)(conv1)
-        conv1 = BatchNormalization(trainable=True)(conv1)
-        conv1 = GaussianNoise(noise_std)(conv1)
-        pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
+        s1, p1 = encoder_block(inputs, filters, drop_out=False)
+        s2, p2 = encoder_block(p1, filters*2, drop_out=True)
+        s3, p3 = encoder_block(p2, filters*4, drop_out=True)
+        s4, p4 = encoder_block(p3, filters*8, drop_out=True)
 
-        # Conv 2
-        conv2 = Conv2D(filters=filters*2, **conv_args)(pool1)
-        conv2 = BatchNormalization(trainable=True)(conv2)
-        conv2 = Conv2D(filters=filters*2, **conv_args)(conv2)
-        conv2 = BatchNormalization(trainable=True)(conv2)
-        conv2 = GaussianNoise(noise_std)(conv2)
-        drop2 = Dropout(drop_rate)(conv2, training=True)
-        pool2 = MaxPooling2D(pool_size=(2, 2))(drop2)
+        b1 = conv_block(p4, filters*16, drop_out=True)
 
-        # Conv 3
-        conv3 = Conv2D(filters=filters*4, **conv_args)(pool2)
-        conv3 = BatchNormalization(trainable=True)(conv3)
-        conv3 = Conv2D(filters=filters*4, **conv_args)(conv3)
-        conv3 = BatchNormalization(trainable=True)(conv3)
-        conv3 = GaussianNoise(noise_std)(conv3)
-        drop3 = Dropout(drop_rate)(conv3, training=True)
-        pool3 = MaxPooling2D(pool_size=(2, 2))(drop3)
+        d1 = decoder_block(b1, s4, filters*8)
+        d2 = decoder_block(d1, s3, filters*4)
+        d3 = decoder_block(d2, s2, filters*2)
+        d4 = decoder_block(d3, s1, filters)
 
-        # Conv 4
-        conv4 = Conv2D(filters=filters*8, **conv_args)(pool3)
-        conv4 = BatchNormalization(trainable=True)(conv4)
-        conv4 = Conv2D(filters=filters*8, **conv_args)(conv4)
-        conv4 = BatchNormalization(trainable=True)(conv4)
-        conv4 = GaussianNoise(noise_std)(conv4)
-        drop4 = Dropout(drop_rate)(conv4, training=True)
-        pool4 = MaxPooling2D(pool_size=(2, 2))(drop4)
+        outputs = Conv2D(1, 1, padding="same", activation=None)(d4)
 
-        # Conv 5
-        conv5 = Conv2D(filters=filters*16, **conv_args)(pool4)
-        conv5 = BatchNormalization(trainable=True)(conv5)
-        conv5 = Conv2D(filters=filters*16, **conv_args)(conv5)
-        conv5 = BatchNormalization(trainable=True)(conv5)
-        drop5 = Dropout(0.5)(conv5, training=True)
-
-        # UpConv 1
-        conv5 = Conv2DTranspose(filters=filters*8, strides=(2, 2), **conv_args)((conv5))
-        conv5 = BatchNormalization(trainable=True)(conv5)
-        drop5 = Dropout(0.5)(conv5, training=True)
-        merge6 = concatenate([drop4, drop5], axis=3)
-
-        # UpConv 2
-        conv6 = Conv2D(filters=filters*8, **conv_args)(merge6)
-        conv6 = BatchNormalization(trainable=True)(conv6)
-        conv6 = Conv2D(filters=filters*8, **conv_args)(conv6)
-        conv6 = BatchNormalization(trainable=True)(conv6)
-        conv6 = Conv2DTranspose(filters=filters*4, strides=(2, 2), **conv_args)((conv6))
-        conv6 = BatchNormalization(trainable=True)(conv6)
-        conv6 = GaussianNoise(noise_std)(conv6)
-        drop6 = Dropout(drop_rate)(conv6, training=True)
-
-        # UpConv 3
-        merge7 = concatenate([drop3, drop6], axis=3)
-        conv7 = Conv2D(filters=filters*4, **conv_args)(merge7)
-        conv7 = BatchNormalization(trainable=True)(conv7)
-        conv7 = Conv2D(filters=filters*4, **conv_args)(conv7)
-        conv7 = BatchNormalization(trainable=True)(conv7)
-        conv7 = Conv2DTranspose(filters=filters*2, strides=(2, 2), **conv_args)((conv7))
-        conv7 = BatchNormalization(trainable=True)(conv7)
-        conv7 = GaussianNoise(noise_std)(conv7)
-        drop7 = Dropout(drop_rate)(conv7, training=True)
-
-        # UpConv 4
-        merge8 = concatenate([drop2, drop7], axis=3)
-        conv8 = Conv2D(filters=filters*2, **conv_args)(merge8)
-        conv8 = BatchNormalization(trainable=True)(conv8)
-        conv8 = Conv2D(filters=filters*2, **conv_args)(conv8)
-        conv8 = BatchNormalization(trainable=True)(conv8)
-        conv8 = Conv2DTranspose(filters=filters, strides=(2, 2), **conv_args)((conv8))
-        conv8 = BatchNormalization(trainable=True)(conv8)
-        conv8 = GaussianNoise(noise_std)(conv8)
-        drop8 = Dropout(drop_rate)(conv8, training=True)
-
-        # Conv 5 output
-        merge9 = concatenate([conv1, drop8], axis=3)
-        conv9 = Conv2D(filters=filters, **conv_args)(merge9)
-        conv9 = Conv2D(filters=filters, **conv_args)(conv9)
-        conv9 = Conv2D(1, **conv_args)(conv9)
-        conv10 = Conv2D(1, 1, activation=None)(conv9)
-
-        model = Model(inputs=inputs, outputs=[conv10])
-        model.compile(optimizer=optimizer, loss='mse', metrics=[absolute_error, pred_min, pred_max])
+        model = Model(inputs, outputs, name="U-Net")
+        model.compile(optimizer=optimizer, loss='mse',
+                      metrics=[absolute_error, pred_min, pred_max])
 
         return(model)
 
@@ -163,7 +115,7 @@ class UNet():
             return([cb, earlystop, Checkpoint])
 
     def train(self):
-        # Make generators object
+        # Generators
         train_generator = self.data_generator('Train')
         val_generator = self.data_generator('Validation')
         model = self.build()
@@ -181,3 +133,26 @@ class UNet():
         test_generator = self.data_generator(split='Test')
         preds = self.model.predict(test_generator)
         return(preds)
+
+    def verify_generators(self, n_img):
+        test_gen = self.data_generator('Test')
+        val_gen = self.data_generator('Validation')
+        train_gen = self.data_generator('Train')
+        
+        print("Images flowing from: " + dir_name + "\n")
+        print("Length of train generator: %d / Batch size: %d / Total items: %d \n" %
+              (train_gen.__len__(),  batch_size, train_gen.__len__() * batch_size))
+        print("Length of validation generator: %d / Batch size: %d / Total items: %d \n" %
+              (val_gen.__len__(),  batch_size, val_gen.__len__() * batch_size))
+        print("Length of test generator: %d / Batch size: %d / Total items: %d \n" %
+              (test_gen.__len__(),  1, test_gen.__len__()))
+        print("Checking for Nan values:\n")
+        print('Train generator:')
+        check_nan_generator(train_gen)
+        print('Val generator:')
+        check_nan_generator(val_gen)
+        print('Test generator:')
+        check_nan_generator(test_gen)
+        
+        print("Plotting %d images from train generator ....\n"%(n_img))
+        plot_output_generator(train_gen, n_img=n_img)

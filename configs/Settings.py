@@ -3,7 +3,7 @@
 """Global settings for Unet network"""
 
 import tensorflow as tf
-from ops.utils import sorted_list_path
+from ops.utils import initialize_file_path
 # 0) Input shape
 img_size = (512, 512)
 n_channels = 3
@@ -39,19 +39,7 @@ epoch_patience = 20
 
 # 4) File paths
 dir_name = "Data_bathy_01_18_sup_1.1"
-input_dir_train = "./data_CNN/" + dir_name + "/Train/Input/"
-target_dir_train = "./data_CNN/" + dir_name + "/Train/Target/"
-input_dir_val = "./data_CNN/" + dir_name + "/Validation/Input/"
-target_dir_val = "./data_CNN/" + dir_name + "/Validation/Target/"
-input_dir_test = "./data_CNN/" + dir_name + "/Test/Input/"
-target_dir_test = "./data_CNN/" + dir_name + "/Test/Target/"
 
-
-train_input_img_paths = sorted_list_path(input_dir_train)
-train_target_img_paths = sorted_list_path(target_dir_train)
-val_input_img_paths = sorted_list_path(input_dir_val)
-val_target_img_paths = sorted_list_path(target_dir_val)
-test_input_img_paths = sorted_list_path(input_dir_test)
-test_target_img_paths = sorted_list_path(target_dir_test)
-
-
+train_input_img_paths, train_target_img_paths = initialize_file_path(dir_name, 'Train')
+val_input_img_paths, val_target_img_paths = initialize_file_path(dir_name, 'Validation')
+test_input_img_paths, test_target_img_paths = initialize_file_path(dir_name, 'Test')

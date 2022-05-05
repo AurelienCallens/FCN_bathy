@@ -25,13 +25,14 @@ from tensorflow.keras.optimizers import Adam
 
 class Pix2Pix():
     def __init__(self):
+
         # Input shape
         self.img_rows = img_size[0]
         self.img_cols = img_size[1]
         self.channels = n_channels
         self.batch_size = 6
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
-        
+
         # Configure data sequence generator
         self.dataset_name = 'test_res'
         self.train_gen = CustomGenerator(batch_size=self.batch_size,
@@ -47,6 +48,7 @@ class Pix2Pix():
                                input_img_paths=test_input_img_paths,
                                target_img_paths=test_target_img_paths,
                                split='Test')
+
         # Calculate output shape of D (PatchGAN)
         patch = int(self.img_rows / 2**4)
         self.disc_patch = (patch, patch, 1)

@@ -23,7 +23,7 @@ seed(42)
 # tensorflow seed fixing
 tf.random.set_seed(42)
 
-# 1) Test one model
+# 1) Unet model
 Unet_model = UNet(size=img_size, bands=n_channels)
 
 # Check FCN structure
@@ -31,16 +31,7 @@ model = Unet_model.build()
 model.summary()
 
 # Check results of train gen
-# check_nan_generator(Unet_model, split='Validation')
-test_gen = Unet_model.data_generator('Test')
-val_gen = Unet_model.data_generator('Validation')
-train_gen = Unet_model.data_generator('Train')
-test_gen.__len__()
-train_gen.__len__() * batch_size
-val_gen.__len__() * batch_size
-
-plot_output_generator(Unet_model, n_img=2)
-
+#Unet_model.verify_generators(n_img=2)
 
 # Train the model
 Trained_model = Unet_model.train()
