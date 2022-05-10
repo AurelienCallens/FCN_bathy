@@ -59,7 +59,7 @@ def plot_history(history):
 
 def plot_predictions(test_generator, predictions, every_n):
 
-    for i in np.arange(0, predictions.shape[0], 1):
+    for i in np.arange(0, predictions.shape[0], every_n):
         cond_img = test_generator.__getitem__(i)[0]
         true_img = test_generator.__getitem__(i)[1]
         pred_img = predictions[i, :, :, :]

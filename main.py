@@ -49,19 +49,4 @@ plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
 tf.keras.models.save_model(Trained_model[0], name)
 
 
-# 2) Load a model
-Trained_model = tf.keras.models.load_model('trained_models/Model_2',
-                                           custom_objects={'absolute_error':absolute_error,
-                                                           'pred_min':pred_min,
-                                                           'pred_max':pred_max},
-                                           compile=True)
-
-Trained_model.compile(optimizer=optimizer, loss='mse', metrics=[absolute_error, pred_min, pred_max])
-
-test_gen = Unet_model.data_generator('Test')
-Trained_model.evaluate(test_gen)
-preds = Trained_model.predict(test_gen)
-
-plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
-
 
