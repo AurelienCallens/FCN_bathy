@@ -67,7 +67,7 @@ ax1.imshow(np.uint8(input_0.squeeze()[:, :, 0]*255), cmap='gray')
 ax2 = fig.add_subplot(gs[ 3:6, 0:3])
 ax2.imshow(np.uint8(input_0.squeeze()[:, :, 1]*255), cmap='gray')
 ax3 = fig.add_subplot(gs[ :3, 4:7])
-im = ax3.imshow(true_0.squeeze(), cmap='jet', vmin=_vmin, vmax=_vmax)
+im = ax3.imshow(true_0.squeeze().astype('float32'), cmap='jet', vmin=_vmin, vmax=_vmax)
 plt.colorbar(im, ax=ax3, fraction=0.046, pad=0.04)
 ax4 = fig.add_subplot(gs[3:6, 4:7])
 im = ax4.imshow(pred_0.mean(axis=2), cmap='jet', vmin=_vmin, vmax=_vmax)
@@ -91,7 +91,7 @@ plt.show()
 ## Grad Cam
 
 
-last_conv_layer_name = "batch_normalization_41"
+last_conv_layer_name = "batch_normalization_43"
 
 from tensorflow.keras.models import Model
 import tensorflow as tf, numpy as np, cv2
@@ -155,7 +155,7 @@ plt.imshow(input_0.squeeze().astype('float32'))
 (heatmap, output) = cam.overlay_heatmap(heatmap, input_0*255, alpha=0.7)
 
 
-plt.imshow(output)
+plt.imshow(heatmap)
 
 
 ##### https://towardsdatascience.com/visualizing-intermediate-activation-in-convolutional-neural-networks-with-keras-260b36d60d0

@@ -101,6 +101,7 @@ class Pix2Pix():
             d = LeakyReLU(alpha=0.2)(d)
             if bn:
                 d = BatchNormalization(momentum=0.8)(d)
+                d = GaussianNoise(noise_std)(d)
             return d
 
         def deconv2d(layer_input, skip_input, filters, f_size=4, dropout_rate=0):
@@ -110,6 +111,7 @@ class Pix2Pix():
             if dropout_rate:
                 u = Dropout(dropout_rate)(u)
             u = BatchNormalization(momentum=0.8)(u)
+            u = GaussianNoise(noise_std)(u)
             u = concatenate([u, skip_input])
             return u
 
@@ -249,13 +251,13 @@ network.discriminator.summary()
 network.generator.summary()
 network.batch_size
 network.disc_patch
-network.sample_images(11)
+network.sample_images(10)
 
 
 
-network.train(epochs=100, batch_size=6, sample_interval=1, img_index=45)
+network.train(epochs=100, batch_size=6, sample_interval=1, img_index=10)
 network.sample_images(6)
-tf.keras.models.save_model(network.generator, 'cGAN_1_data_sup_1.1_bathy_01_31')
+tf.keras.models.save_model(network.generator, 'cGAN_1_data_sup_1.1_noise')
 
 Trained_model = tf.keras.models.load_model('trained_models/cGAN_1_data_sup_1.1_bathy_01_31',
                                            custom_objects={'absolute_error':absolute_error,
