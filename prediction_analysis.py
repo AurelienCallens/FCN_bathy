@@ -15,11 +15,12 @@ from evaluation.verif_functions import *
 from evaluation.metric_functions import *
 from executor.tf_init import start_tf_session
 import matplotlib.gridspec as gridspec
+from scipy.ndimage import gaussian_filter
 
 # 0) Initialize session
-mode = 'cpu'
+#mode = 'cpu'
 #mode = 'gpu'
-start_tf_session(mode)
+#start_tf_session(mode)
 
 # keras seed fixing
 seed(42)
@@ -46,12 +47,12 @@ preds = Trained_model.predict(test_gen)
 plot_predictions(test_generator=test_gen, predictions=preds, every_n=4)
 
 pred_number = 10
-item = 9
+item = 25
 true_0 = test_gen.__getitem__(item)[1]
 input_0 = test_gen.__getitem__(item)[0]
 pred_0 = Trained_model.predict(test_gen.__getitem__(item)[0]).squeeze()
 #pred_0 = Trained_model.predict(np.zeros((1, 512, 512, 3))
-Trained_model.summary()
+#Trained_model.summary()
 
 for i in range(pred_number-1):
     pred_0 = np.dstack([pred_0 , Trained_model.predict(test_gen.__getitem__(item)[0]).squeeze()])
@@ -88,10 +89,11 @@ ax6.title.set_text('Uncertainty')
 plt.show()
 
 
-## Grad Cam
+## Grad Cam ? Grad Ram ?
+#https://github.com/cauchyturing/kaggle_diabetic_RAM
 
+Trained_model.summary()
 
-last_conv_layer_name = "batch_normalization_43"
 
 from tensorflow.keras.models import Model
 import tensorflow as tf, numpy as np, cv2
@@ -120,10 +122,12 @@ class GradCAM:
         with tf.GradientTape() as (tape):
             inputs = tf.cast(image, tf.float32)
             convOutputs, predictions = gradModel(inputs)
-            loss = predictions
+            loss = predictions[:]
         grads = tape.gradient(loss, convOutputs)
-        castConvOutputs = tf.cast(convOutputs > 0, 'float32')
-        castGrads = tf.cast(grads > 0, 'float32')
+        #castConvOutputs = tf.cast(convOutputs > 0, 'float32')
+        castConvOutputs = tf.cast(convOutputs, 'float32')
+        #castGrads = tf.cast(grads > 0, 'float32')
+        castGrads = tf.cast(grads, 'float32')
         guidedGrads = castConvOutputs * castGrads * grads
         convOutputs = convOutputs[0]
         guidedGrads = guidedGrads[0]
@@ -131,36 +135,86 @@ class GradCAM:
         cam = tf.reduce_sum((tf.multiply(weights, convOutputs)), axis=(-1))
         w, h = image.shape[2], image.shape[1]
         heatmap = cv2.resize(cam.numpy(), (w, h))
-        numer = heatmap - np.min(heatmap)
-        denom = heatmap.max() - heatmap.min() + eps
-        heatmap = numer / denom
+        #numer = heatmap - np.min(heatmap)
+        #denom = heatmap.max() - heatmap.min() + eps
+        #heatmap = numer / denom
         #heatmap = (heatmap * 255).astype('uint8')
         return heatmap
 
     def overlay_heatmap(self, heatmap, image, alpha=0.5, colormap=cv2.COLORMAP_JET):
         heatmap = cv2.applyColorMap(heatmap, colormap)
         output= cv2.addWeighted(image.squeeze().astype('uint8'), alpha, heatmap, 1 - alpha, 0)
-        return (heatmap, output)
+        return (output)
 
 # initialize our gradient class activation map and build the heatmap
-cam = GradCAM(Trained_model, true_0)
+last_conv_layer_name = "conv2d_55"
+cam = GradCAM(Trained_model, true_0, layerName=last_conv_layer_name)
 heatmap = cam.compute_heatmap(input_0)
-heat = plt.imshow(heatmap, cmap='gray')
+
+
+
+fig = plt.figure(figsize=(9, 8))
+gs = gridspec.GridSpec(8, 8)
+gs.update(wspace=1, hspace=1)
+ax1 = fig.add_subplot(gs[:4, :4])
+im = ax1.imshow(heatmap, cmap='jet')
+plt.colorbar(im, ax=ax1, fraction=0.046, pad=0.04)
+ax2 = fig.add_subplot(gs[:4, 4:])
+ax2.imshow(np.uint8(input_0[0,:,:,0]*255), cmap='gray')
+ax3 = fig.add_subplot(gs[4:, :4])
+im = ax3.imshow(np.uint8(input_0[0,:,:,1]*255), cmap='gray')
+ax4 = fig.add_subplot(gs[4:, 4:])
+im = ax4.imshow(np.uint8(input_0[0,:,:,2]*255), cmap='gray')
+
+
+
+
+
+heat = plt.imshow(heatmap, cmap='jet')
 #plt.colorbar(heat, fraction=0.046, pad=0.04)
 plt.imshow(input_0.squeeze().astype('float32'))
 
 
-# resize the resulting heatmap to the original input image dimensions
-# and then overlay heatmap on top of the image
-(heatmap, output) = cam.overlay_heatmap(heatmap, input_0*255, alpha=0.7)
-
-
-plt.imshow(heatmap)
-
-
 ##### https://towardsdatascience.com/visualizing-intermediate-activation-in-convolutional-neural-networks-with-keras-260b36d60d0
 
-layer_outputs = [layer.output for layer in classifier.layers[:12]] 
-# Extracts the outputs of the top 12 layers
-activation_model = models.Model(inputs=classifier.input, outputs=layer_outputs) # Creates a model that will return these outputs, given the model input
+
+img = input_0[0]
+
+def apply_grey_patch(image, top_left_x, top_left_y, patch_size):
+    patched_image = np.array(image, copy=True)
+    patched_image[top_left_y:(top_left_y + patch_size), top_left_x:(top_left_x + patch_size), :] = 0
+
+    return patched_image
+
+plt.imshow(apply_grey_patch(img, 0, 0, 64).astype('float32'))
+
+pred_0 = Trained_model.predict(input_0)
+PATCH_SIZE = 8
+sensitivity_map = np.zeros((img.shape[0], img.shape[1]))
+
+# Iterate the patch over the image
+for top_left_x in range(0, img.shape[0], PATCH_SIZE):
+    for top_left_y in range(0, img.shape[1], PATCH_SIZE):
+        patched_image = apply_grey_patch(img, top_left_x, top_left_y, PATCH_SIZE)
+        predicted_img = Trained_model.predict(np.array([patched_image]))[0]
+        
+        confidence = float(pixel_error(true_0, predicted_img)/pixel_error(true_0, pred_0))
+        
+        # Save confidence for this specific patched image in map
+        sensitivity_map[
+            top_left_y:top_left_y + PATCH_SIZE,
+            top_left_x:top_left_x + PATCH_SIZE,
+        ] = confidence
+
+
+
+
+im=plt.imshow(sensitivity_map, cmap='jet')
+plt.colorbar(im,  fraction=0.046, pad=0.04)
+
+sensitivity_map.shape
+
+
+
+
 
