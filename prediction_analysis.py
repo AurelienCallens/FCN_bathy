@@ -47,7 +47,7 @@ preds = Trained_model.predict(test_gen)
 plot_predictions(test_generator=test_gen, predictions=preds, every_n=4)
 
 pred_number = 10
-item = 25
+item = 10
 true_0 = test_gen.__getitem__(item)[1]
 input_0 = test_gen.__getitem__(item)[0]
 pred_0 = Trained_model.predict(test_gen.__getitem__(item)[0]).squeeze()
@@ -147,7 +147,7 @@ class GradCAM:
         return (output)
 
 # initialize our gradient class activation map and build the heatmap
-last_conv_layer_name = "conv2d_55"
+last_conv_layer_name = "conv2d_16"
 cam = GradCAM(Trained_model, true_0, layerName=last_conv_layer_name)
 heatmap = cam.compute_heatmap(input_0)
 
@@ -189,7 +189,7 @@ def apply_grey_patch(image, top_left_x, top_left_y, patch_size):
 plt.imshow(apply_grey_patch(img, 0, 0, 64).astype('float32'))
 
 pred_0 = Trained_model.predict(input_0)
-PATCH_SIZE = 8
+PATCH_SIZE =16
 sensitivity_map = np.zeros((img.shape[0], img.shape[1]))
 
 # Iterate the patch over the image
@@ -209,7 +209,7 @@ for top_left_x in range(0, img.shape[0], PATCH_SIZE):
 
 
 
-im=plt.imshow(sensitivity_map, cmap='jet')
+im=plt.imshow(gaussian_filter(sensitivity_map, 5) , cmap='jet')
 plt.colorbar(im,  fraction=0.046, pad=0.04)
 
 sensitivity_map.shape

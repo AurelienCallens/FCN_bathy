@@ -20,7 +20,7 @@ from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, con
 from tensorflow.keras.layers import BatchNormalization, Activation, ZeroPadding2D, GaussianNoise
 from tensorflow.keras.layers import LeakyReLU, UpSampling2D, Conv2D
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam, SGD
 
 
 class Pix2Pix():
@@ -54,17 +54,18 @@ class Pix2Pix():
         self.disc_patch = (patch, patch, 1)
 
         # Number of filters in the first layer of G and D
-        self.gf = 16
-        self.df = 8
+        self.gf = 8
+        self.df = 4
         self.noise_std = 0.05
         self.drop_rate = 0.2
         optimizer = Adam(0.0002, 0.5)
-
+        optimizer_disc = SGD(0.0001)
         # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
-        self.discriminator.compile(loss='mse',
-                                   optimizer=optimizer,
-                                   metrics=['accuracy'])
+        self.discriminator.compile(loss='binary_crossentropy',
+                                   optimizer=optimizer_disc,
+                                   metrics=['accuracy'],
+                                   loss_weights=[0.5])
 
         #-------------------------
         # Construct Computational
@@ -88,7 +89,7 @@ class Pix2Pix():
         valid = self.discriminator([fake_A, img_B])
 
         self.combined = Model(inputs=[img_A, img_B], outputs=[valid, fake_A])
-        self.combined.compile(loss=['mse', 'mae'],
+        self.combined.compile(loss=['binary_crossentropy', 'mae'],
                               loss_weights=[1, 100],
                               optimizer=optimizer)
 
@@ -163,7 +164,7 @@ class Pix2Pix():
         d4 = d_layer(d3, self.df*8)
 
         validity = Conv2D(1, kernel_size=4, strides=1, padding='same')(d4)
-
+        validity = Activation('sigmoid')(validity)
         return Model([img_A, img_B], validity)
 
     def train(self, epochs, batch_size=1, sample_interval=5, img_index=1):
@@ -193,8 +194,8 @@ class Pix2Pix():
             # Train the discriminators (original images = real / generated = Fake)
             d_loss_real = self.discriminator.train_on_batch([imgs_A, imgs_B], valid)
             d_loss_fake = self.discriminator.train_on_batch([fake_A, imgs_B], fake)
-            d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
-
+            d_loss = np.add(d_loss_real, d_loss_fake)
+            
             # -----------------
             #  Train Generator
             # -----------------
@@ -206,9 +207,10 @@ class Pix2Pix():
             # Plot the progress
             if ((batchIndex + 1) == self.train_gen.__len__()) and (epoch % sample_interval == 0):
             #if ((batchIndex + 1) % 5 ==0):
-                print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch, epochs,
+                print ("[Epoch %d/%d] [Batch %d/%d] [D loss real: %f, acc: %3d%%] [D loss fake: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch+1, epochs,
                                                                     batchIndex+1, self.train_gen.__len__(),
-                                                                    d_loss[0], 100*d_loss[1],
+                                                                    d_loss_real[0], 100*d_loss_real[1],
+                                                                    d_loss_fake[0], 100*d_loss_fake[1],
                                                                     g_loss[0],
                                                                     elapsed_time))
                 self.sample_images(img_ind=img_index)
@@ -253,13 +255,13 @@ network.batch_size
 network.disc_patch
 network.sample_images(10)
 
-
+discri = network.discriminator.predict([network.test_gen.__getitem__(0)[1],
+                               network.test_gen.__getitem__(0)[0]])
 
 network.train(epochs=100, batch_size=6, sample_interval=1, img_index=10)
 network.sample_images(6)
-tf.keras.models.save_model(network.generator, 'cGAN_1_data_sup_1.1_noise')
-
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_1_data_sup_1.1_bathy_01_31',
+tf.keras.models.save_model(network.generator, 'cGAN_1_data_sup_1.1_noise_binary_loss')
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_1_data_sup_1.1_noise_binary_loss',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'pred_min':pred_min,
                                                            'pred_max':pred_max},
