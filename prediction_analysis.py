@@ -8,6 +8,7 @@ Created on Tue May 10 10:58:37 2022
 
 import tensorflow as tf
 import numpy as np
+import pandas as pd
 from numpy.random import seed
 from configs.Settings import *
 from model.UnetModel import UNet
@@ -19,8 +20,8 @@ from scipy.ndimage import gaussian_filter
 
 # 0) Initialize session
 #mode = 'cpu'
-#mode = 'gpu'
-#start_tf_session(mode)
+mode = 'gpu'
+start_tf_session(mode)
 
 # keras seed fixing
 seed(42)
@@ -32,22 +33,24 @@ tf.random.set_seed(42)
 # 1) Load a model
 Unet_model = UNet(size=img_size, bands=n_channels)
 
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_1_data_sup_1.1',
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_1_data_sup_1.1_noise_binary_loss',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'pred_min':pred_min,
                                                            'pred_max':pred_max},
                                            compile=False)
 
-Trained_model.compile(optimizer=optimizer, loss='mse', metrics=[absolute_error, pred_min, pred_max])
+Trained_model.compile(optimizer=optimizer, loss='mse', metrics=[absolute_error, psnr, ssim, ms_ssim])
 
 test_gen = Unet_model.data_generator('Test')
 Trained_model.evaluate(test_gen)
+
 preds = Trained_model.predict(test_gen)
+
 
 plot_predictions(test_generator=test_gen, predictions=preds, every_n=4)
 
 pred_number = 10
-item = 10
+item = 90
 true_0 = test_gen.__getitem__(item)[1]
 input_0 = test_gen.__getitem__(item)[0]
 pred_0 = Trained_model.predict(test_gen.__getitem__(item)[0]).squeeze()
@@ -216,5 +219,33 @@ sensitivity_map.shape
 
 
 
+preds = Trained_model.predict(test_gen)
+
+true = np.stack([ test_gen.__getitem__(i)[1] for i in range(test_gen.__len__())], axis=0)
 
 
+def calculate_metrics(true, pred):
+    return([root_mean_squared_error(true, pred).numpy(),
+            absolute_error(true, pred).numpy(),
+            psnr(true, pred).numpy()[0],
+            ssim(true, pred).numpy()[0],
+            ms_ssim(true, pred).numpy()[0]])
+
+acc_array = np.array(list(map(lambda x, y: calculate_metrics(x, y), true, preds)))
+
+acc_array = pd.DataFrame(acc_array, columns=('rmse', 'mae', 'pnsr', 'ssim', 'ms_ssim'))
+
+acc_array.mean()
+acc_array.hist()
+acc_array[:, :2].argmax(axis=0)
+acc_array[:, 2:].argmin(axis=0)
+
+# Accuracy first bathy 
+
+acc_array.loc[:34, :].mean()
+
+acc_array.loc[35:56, :].mean()
+
+acc_array.loc[57:90, :].mean()
+
+acc_array.loc[91:, :].mean()

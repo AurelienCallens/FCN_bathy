@@ -24,13 +24,13 @@ from tensorflow.keras.optimizers import Adam, SGD
 
 
 class Pix2Pix():
-    def __init__(self):
+    def __init__(self, batch_size):
 
         # Input shape
         self.img_rows = img_size[0]
         self.img_cols = img_size[1]
         self.channels = n_channels
-        self.batch_size = 6
+        self.batch_size = batch_size
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
 
         # Configure data sequence generator
@@ -54,12 +54,12 @@ class Pix2Pix():
         self.disc_patch = (patch, patch, 1)
 
         # Number of filters in the first layer of G and D
-        self.gf = 8
-        self.df = 4
+        self.gf = 16
+        self.df = 8
         self.noise_std = 0.05
         self.drop_rate = 0.2
         optimizer = Adam(0.0002, 0.5)
-        optimizer_disc = SGD(0.0001)
+        optimizer_disc = SGD(0.0002)
         # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
         self.discriminator.compile(loss='binary_crossentropy',
@@ -167,13 +167,13 @@ class Pix2Pix():
         validity = Activation('sigmoid')(validity)
         return Model([img_A, img_B], validity)
 
-    def train(self, epochs, batch_size=1, sample_interval=5, img_index=1):
+    def train(self, epochs, sample_interval=5, img_index=1):
 
         start_time = datetime.datetime.now()
 
         # Adversarial loss ground truths
-        valid = np.ones((batch_size,) + self.disc_patch)
-        fake = np.zeros((batch_size,) + self.disc_patch)
+        valid = np.ones((self.batch_size,) + self.disc_patch)
+        fake = np.zeros((self.batch_size,) + self.disc_patch)
 
         for epoch, batchIndex, originalBatchIndex, xAndY in ParallelIterator(
                                        self.train_gen,
@@ -248,7 +248,7 @@ class Pix2Pix():
         plt.show()
         
 
-network = Pix2Pix()
+network = Pix2Pix(batch_size=6)
 network.discriminator.summary()
 network.generator.summary()
 network.batch_size
@@ -258,7 +258,7 @@ network.sample_images(10)
 discri = network.discriminator.predict([network.test_gen.__getitem__(0)[1],
                                network.test_gen.__getitem__(0)[0]])
 
-network.train(epochs=100, batch_size=6, sample_interval=1, img_index=10)
+network.train(epochs=150, sample_interval=1, img_index=10)
 network.sample_images(6)
 tf.keras.models.save_model(network.generator, 'cGAN_1_data_sup_1.1_noise_binary_loss')
 Trained_model = tf.keras.models.load_model('trained_models/cGAN_1_data_sup_1.1_noise_binary_loss',
