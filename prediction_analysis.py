@@ -20,8 +20,8 @@ from scipy.ndimage import gaussian_filter
 
 # 0) Initialize session
 #mode = 'cpu'
-mode = 'gpu'
-start_tf_session(mode)
+#mode = 'gpu'
+#start_tf_session(mode)
 
 # keras seed fixing
 seed(42)
@@ -33,7 +33,7 @@ tf.random.set_seed(42)
 # 1) Load a model
 Unet_model = UNet(size=img_size, bands=n_channels)
 
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_1_data_sup_1.1_noise_binary_loss',
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_1_data_sup_1.1',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'pred_min':pred_min,
                                                            'pred_max':pred_max},
@@ -232,15 +232,30 @@ def calculate_metrics(true, pred):
             ms_ssim(true, pred).numpy()[0]])
 
 acc_array = np.array(list(map(lambda x, y: calculate_metrics(x, y), true, preds)))
-
 acc_array = pd.DataFrame(acc_array, columns=('rmse', 'mae', 'pnsr', 'ssim', 'ms_ssim'))
 
-acc_array.mean()
-acc_array.hist()
-acc_array[:, :2].argmax(axis=0)
-acc_array[:, 2:].argmin(axis=0)
+import os 
+acc_array['Date'] = list(map(lambda x: os.path.basename(x)[:-4], test_input_img_paths))
+acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H_%M_%S")
 
-# Accuracy first bathy 
+tide_wave_cond = pd.read_csv('data_CNN/Data_processed/meta_df.csv')[['Date', 'bathy', 'Tide', 'Hs_m', 'Tp_m', 'Dir_m']]
+tide_wave_cond['Date']= pd.to_datetime(tide_wave_cond['Date'], format="%Y-%m-%d %H:%M:%S")
+
+acc_array = pd.merge(acc_array, tide_wave_cond, on='Date', how='inner').drop_duplicates(ignore_index=True)
+
+
+acc_array.mean()
+
+# Rmse depending on tide 
+
+for title, group in acc_array.groupby('bathy'):
+    group.plot('rmse', 'Tide', 'scatter', title=title)
+
+
+for title, group in acc_array.groupby('bathy'):
+    group.plot('rmse', 'Hs_m', 'scatter', title=title)
+
+
 
 acc_array.loc[:34, :].mean()
 
