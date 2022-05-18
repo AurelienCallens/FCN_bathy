@@ -38,7 +38,7 @@ epoch_patience = 20
 
 
 # 4) File paths
-dir_name = "Data_sup_1.1"
+dir_name = "Data_bathy_01_18_sup_1.1"
 
 train_input_img_paths, train_target_img_paths = initialize_file_path(dir_name, 'Train')
 val_input_img_paths, val_target_img_paths = initialize_file_path(dir_name, 'Validation')
