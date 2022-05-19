@@ -23,8 +23,8 @@ from scipy.ndimage import gaussian_filter
 
 # 0) Initialize session
 #mode = 'cpu'
-#mode = 'gpu'
-#start_tf_session(mode)
+mode = 'gpu'
+start_tf_session(mode)
 
 # keras seed fixing
 seed(42)
@@ -36,26 +36,27 @@ tf.random.set_seed(42)
 # 1) Load a model
 Unet_model = UNet(size=img_size, bands=n_channels)
 
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_1_data_sup_1.1_bathy_01_31',
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_data_sup_1.1_01_31_noise_binary_loss',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'pred_min':pred_min,
                                                            'pred_max':pred_max},
                                            compile=False)
 
-Trained_model.compile(optimizer=optimizer, loss='mse', metrics=[absolute_error, psnr, ssim, ms_ssim])
+Trained_model.compile(optimizer=optimizer, loss='mse', metrics=[root_mean_squared_error,absolute_error, psnr, ssim, ms_ssim])
 
 test_gen = Unet_model.data_generator('Test')
 Trained_model.evaluate(test_gen)
 
 preds = Trained_model.predict(test_gen)
 
+plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
 
 ########################################
 # Display predictions with uncertainty #
 ########################################
 
 
-pred_number = 20
+pred_number = 50
 item = 7
 true_0 = test_gen.__getitem__(item)[1]
 input_0 = test_gen.__getitem__(item)[0]
@@ -87,7 +88,7 @@ ax5 = fig.add_subplot(gs[:3, 8:11])
 im = ax5.imshow(np.abs(true_0.squeeze() - pred_0.mean(axis=2)), cmap='inferno')
 plt.colorbar(im, ax=ax5, fraction=0.046, pad=0.04)
 ax6 = fig.add_subplot(gs[3:6, 8:11])
-im = ax6.imshow(pred_0.std(axis=2)*2, cmap='inferno', vmin=0, vmax=(pred_0.std(axis=2)).max())
+im = ax6.imshow(pred_0.std(axis=2), cmap='inferno', vmin=0, vmax=(pred_0.std(axis=2)).max())
 plt.colorbar(im, ax=ax6, fraction=0.046, pad=0.04)
 ax1.title.set_text('Input Snap')
 ax2.title.set_text('Input Timex')

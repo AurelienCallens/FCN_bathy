@@ -15,13 +15,18 @@ from configs.Settings import *
 from evaluation.metric_functions import *
 from dataloader.CustomGenerator import CustomGenerator
 from dataloader.seq_iterator_gan import ParallelIterator
-
+import matplotlib.gridspec as gridspec
 from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, concatenate
 from tensorflow.keras.layers import BatchNormalization, Activation, ZeroPadding2D, GaussianNoise
 from tensorflow.keras.layers import LeakyReLU, UpSampling2D, Conv2D
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.optimizers import Adam, SGD
-
+from executor.tf_init import start_tf_session
+from scipy.ndimage import gaussian_filter
+# 0) Initialize session
+#mode = 'cpu'
+mode = 'gpu'
+start_tf_session(mode)
 
 class Pix2Pix():
     def __init__(self, batch_size):
@@ -238,7 +243,7 @@ class Pix2Pix():
         im = ax4.imshow(imgs_A.astype('float32'), cmap='jet', vmin=_vmin, vmax=_vmax)
         plt.colorbar(im, ax=ax4)
         ax5 = fig.add_subplot(gs[1, 3:])
-        im = ax5.imshow(gaussian_filter(fake_A.astype('float32'), sigma=6), cmap='jet', vmin=_vmin, vmax=_vmax)
+        im = ax5.imshow(gaussian_filter(fake_A.astype('float32'), sigma=2), cmap='jet', vmin=_vmin, vmax=_vmax)
         plt.colorbar(im, ax=ax5)
         ax1.title.set_text('Mean RGB Snap')
         ax2.title.set_text('Mean RGB Timex')
@@ -258,16 +263,19 @@ network.sample_images(10)
 discri = network.discriminator.predict([network.test_gen.__getitem__(0)[1],
                                network.test_gen.__getitem__(0)[0]])
 
-network.train(epochs=150, sample_interval=1, img_index=10)
+network.train(epochs=100, sample_interval=1, img_index=9)
 network.sample_images(6)
-tf.keras.models.save_model(network.generator, 'cGAN_1_data_sup_1.1_noise_binary_loss')
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_1_data_sup_1.1_noise_binary_loss',
+tf.keras.models.save_model(network.generator, 'trained_models/cGAN_data_sup_1.1_01_31_noise_binary_loss')
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_data_sup_1.1_01_31_noise_binary_loss',
                                            custom_objects={'absolute_error':absolute_error,
+                                                           'rmse': root_mean_squared_error,
+                                                           'ssim': ssim,
+                                                           'ms-ssim': ms_ssim,
                                                            'pred_min':pred_min,
                                                            'pred_max':pred_max},
                                            compile=False)
 
-Trained_model.compile(optimizer=Adam(0.0002, 0.5), loss='mse', metrics=[absolute_error, pred_min, pred_max])
+Trained_model.compile(optimizer=Adam(0.0002, 0.5), loss='mse', metrics=[root_mean_squared_error, absolute_error, ssim, ms_ssim, pred_min, pred_max])
 
 Trained_model.evaluate(network.test_gen)
 
