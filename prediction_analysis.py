@@ -36,7 +36,7 @@ tf.random.set_seed(42)
 # 1) Load a model
 Unet_model = UNet(size=img_size, bands=n_channels)
 
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_data_sup_1.1_01_31_noise_binary_loss',
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_data_sup_1.1_noise_binary_loss',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'pred_min':pred_min,
                                                            'pred_max':pred_max},
@@ -56,7 +56,7 @@ plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
 ########################################
 
 
-pred_number = 50
+pred_number = 20
 item = 7
 true_0 = test_gen.__getitem__(item)[1]
 input_0 = test_gen.__getitem__(item)[0]
@@ -160,9 +160,22 @@ plt.colorbar(im,  fraction=0.046, pad=0.04)
 ########################################
 # Accuracy vs environmental conditions #
 ########################################
+preds = []
+preds_std = []
+for i in range(test_gen.__len__()):
+    pred_number = 50
+    item = i
+    true_0 = test_gen.__getitem__(item)[1]
+    input_0 = test_gen.__getitem__(item)[0]
+    pred_0 = Trained_model.predict(test_gen.__getitem__(item)[0]).squeeze()
+
+    for i in range(pred_number-1):
+        pred_0 = np.dstack([pred_0 , Trained_model.predict(test_gen.__getitem__(item)[0]).squeeze()])
+    preds.append(pred_0.mean(axis=2))
+    preds_std.append(pred_0.std(axis=2))
 
 
-preds = Trained_model.predict(test_gen)
+#preds = Trained_model.predict(test_gen)
 
 true = np.stack([ test_gen.__getitem__(i)[1] for i in range(test_gen.__len__())], axis=0)
 
@@ -174,13 +187,13 @@ def calculate_metrics(true, pred):
             ssim(true, pred).numpy()[0],
             ms_ssim(true, pred).numpy()[0]])
 
-acc_array = np.array(list(map(lambda x, y: calculate_metrics(x, y), true, preds)))
+acc_array = np.array(list(map(lambda x, y: calculate_metrics(x, np.expand_dims(y,2)), true, preds)))
 acc_array = pd.DataFrame(acc_array, columns=('rmse', 'mae', 'pnsr', 'ssim', 'ms_ssim'))
-
+acc_array['std'] = list(map(np.mean, preds_std))
 
 acc_array['Date'] = list(map(lambda x: os.path.basename(x)[:-4], test_input_img_paths))
 #acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H_%M_%S")
-acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H:%M:%S")
+acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H_%M_%S")
 
 tide_wave_cond = pd.read_csv('data_CNN/Data_processed/meta_df.csv')[['Date', 'bathy', 'Tide', 'Hs_m', 'Tp_m', 'Dir_m']]
 tide_wave_cond['Date']= pd.to_datetime(tide_wave_cond['Date'], format="%Y-%m-%d %H:%M:%S")
@@ -194,41 +207,4 @@ acc_array.mean()
 acc_array['rip'] = 0
 acc_array.loc[acc_array['bathy'].isin( ['2017-03-27', '2018-01-31']), 'rip'] = 1
 
-
-sns.scatterplot(y='Tide', x='rmse', hue='rip', data=acc_array)
-sns.scatterplot(y='Tide', x='rmse', hue='bathy', data=acc_array)
-
-sns.scatterplot(y='Hs_m', x='rmse', hue='rip', data=acc_array)
-sns.scatterplot(y='Hs_m', x='rmse', hue='bathy', data=acc_array)
-
-sns.scatterplot(y='Tp_m', x='rmse', hue='rip', data=acc_array)
-sns.scatterplot(y='Tp_m', x='rmse', hue='bathy', data=acc_array)
-
-import plotly.express as px
-
-fig = px.scatter_3d(acc_array, x='rmse', y='Tide', z='Hs_m')
-fig.write_html("3D_scatter.html")
-
-sns.heatmap(acc_array[acc_array['bathy'] == '2018-01-31'].corr(), annot=True, cmap='bwr')
-
-
-acc_array['Acc'] = 0
-acc_array.loc[acc_array['rmse'] < 0.4, 'Acc'] = 1
-
-sns.boxplot(y = 'Tide', x = 'Acc', data = acc_array)
-
-rip_bathy = acc_array[acc_array['rip'] == 1]
-sns.boxplot(y = 'Tide', x = 'Acc', data = rip_bathy)
-sns.boxplot(y = 'Tp_m', x = 'Acc', data = rip_bathy)
-
-
-acc_array.loc[acc_array['Tide'] < 2.5].mean()
-acc_array.mean()
-
-acc_array.loc[:34, :].mean()
-
-acc_array.loc[35:56, :].mean()
-
-acc_array.loc[57:90, :].mean()
-
-acc_array.loc[91:, :].mean()
+acc_array.to_csv('Accuracy_test_set.csv')
