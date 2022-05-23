@@ -106,14 +106,14 @@ plt.show()
 Trained_model.summary()
 
 model = tf.keras.Model(inputs=Trained_model.inputs,
-                       outputs=Trained_model.layers[39].output)
+                       outputs=Trained_model.layers[54].output)
 
 
 features = model.predict(input_0)
 
 fig = plt.figure(figsize=(20, 15))
 for i in range(1, features.shape[3]+1):
-    plt.subplot(6,6,i)
+    plt.subplot(4,4,i)
     plt.imshow(features[0,:,:,i-1] , cmap='gray')
 plt.show()
 
