@@ -23,8 +23,8 @@ from scipy.ndimage import gaussian_filter
 
 # 0) Initialize session
 #mode = 'cpu'
-mode = 'gpu'
-start_tf_session(mode)
+#mode = 'gpu'
+#start_tf_session(mode)
 
 # keras seed fixing
 seed(42)
@@ -47,48 +47,65 @@ Trained_model.compile(optimizer=optimizer, loss='mse', metrics=[root_mean_square
 test_gen = Unet_model.data_generator('Test')
 Trained_model.evaluate(test_gen)
 
+train_gen = Unet_model.data_generator('Train')
+Trained_model.evaluate(train_gen)
+
 preds = Trained_model.predict(test_gen)
 
-plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
+plot_predictions(test_generator=test_gen, predictions=preds, every_n=5)
 
 ########################################
 # Display predictions with uncertainty #
 ########################################
 
 
-pred_number = 20
-item = 7
-true_0 = test_gen.__getitem__(item)[1]
-input_0 = test_gen.__getitem__(item)[0]
-pred_0 = Trained_model.predict(test_gen.__getitem__(item)[0]).squeeze()
-#pred_0 = Trained_model.predict(np.zeros((1, 512, 512, 3))
-#Trained_model.summary()
+def averaged_pred(test_gen, Trained_model, rep):
+    avg_pred = []
+    std_pred = []
+    err_pred = []
+    for j in range(test_gen.__len__()):
+        true_0 = test_gen.__getitem__(j)[1]
+        input_0 = test_gen.__getitem__(j)[0]
+        pred_0 = Trained_model.predict(test_gen.__getitem__(j)[0]).squeeze()
 
-for i in range(pred_number-1):
-    pred_0 = np.dstack([pred_0 , Trained_model.predict(test_gen.__getitem__(item)[0]).squeeze()])
+        for i in range(rep-1):
+            pred_0 = np.dstack([pred_0 , Trained_model.predict(test_gen.__getitem__(j)[0]).squeeze()])
+
+        avg_pred.append(pred_0.mean(axis=2))
+        std_pred.append(pred_0.std(axis=2))
+        err_pred.append(np.abs(true_0.squeeze() - pred_0.mean(axis=2)))
+    return [avg_pred, std_pred, err_pred]
+
+avg_pred, std_pred, err_pred = averaged_pred(test_gen, Trained_model, 20)
+
+
+item = 20
+snap = test_gen.__getitem__(item)[0].squeeze()[:, :, 0]*255
+timex = test_gen.__getitem__(item)[0].squeeze()[:, :, 1]*255
+true = test_gen.__getitem__(item)[1].squeeze().astype('float32')
 
 import matplotlib.pyplot as plt
-_vmin, _vmax = np.min(true_0)-1, np.max(true_0)+1
+_vmin, _vmax = np.min(true)-1, np.max(true)+1
 
 fig = plt.figure(figsize=(10, 8))
 gs = gridspec.GridSpec(6, 11)
 gs.update(wspace=0.8, hspace=0.5)
 ax1 = fig.add_subplot(gs[:3, 0:3])
-ax1.imshow(np.uint8(input_0.squeeze()[:, :, 0]*255), cmap='gray')
+ax1.imshow(np.uint8(snap), cmap='gray')
 ax2 = fig.add_subplot(gs[ 3:6, 0:3])
-ax2.imshow(np.uint8(input_0.squeeze()[:, :, 1]*255), cmap='gray')
+ax2.imshow(np.uint8(timex), cmap='gray')
 ax3 = fig.add_subplot(gs[ :3, 4:7])
-im = ax3.imshow(true_0.squeeze().astype('float32'), cmap='jet', vmin=_vmin, vmax=_vmax)
+im = ax3.imshow(true.astype('float32'), cmap='jet', vmin=_vmin, vmax=_vmax)
 plt.colorbar(im, ax=ax3, fraction=0.046, pad=0.04)
 ax4 = fig.add_subplot(gs[3:6, 4:7])
-im = ax4.imshow(pred_0.mean(axis=2), cmap='jet', vmin=_vmin, vmax=_vmax)
+im = ax4.imshow(avg_pred[item], cmap='jet', vmin=_vmin, vmax=_vmax)
 plt.colorbar(im, ax=ax4, fraction=0.046, pad=0.04)
 ax5 = fig.add_subplot(gs[:3, 8:11])
 #im = ax5.imshow(true_0.squeeze() - pred_0.mean(axis=2), cmap='bwr')
-im = ax5.imshow(np.abs(true_0.squeeze() - pred_0.mean(axis=2)), cmap='inferno')
+im = ax5.imshow(err_pred[item], cmap='inferno')
 plt.colorbar(im, ax=ax5, fraction=0.046, pad=0.04)
 ax6 = fig.add_subplot(gs[3:6, 8:11])
-im = ax6.imshow(pred_0.std(axis=2), cmap='inferno', vmin=0, vmax=(pred_0.std(axis=2)).max())
+im = ax6.imshow(std_pred[item]*2, cmap='inferno', vmin=0, vmax=std_pred[item].max()*2)
 plt.colorbar(im, ax=ax6, fraction=0.046, pad=0.04)
 ax1.title.set_text('Input Snap')
 ax2.title.set_text('Input Timex')
@@ -99,6 +116,14 @@ ax6.title.set_text('Uncertainty')
 plt.show()
 
 
+std_vec = np.array(std_pred)[:20, :, :].flatten()
+err_vec = np.array(err_pred)[:20, :, :].flatten()
+
+plt.scatter(x=std_vec, y=err_vec)
+plt.xlabel("Uncertainty")
+plt.ylabel("Absolute error in meters")
+plt.title("Absolute error vs uncertainty for the first 20 images")
+
 ########################################
 #      Display activations map         #
 ########################################
@@ -106,9 +131,9 @@ plt.show()
 Trained_model.summary()
 
 model = tf.keras.Model(inputs=Trained_model.inputs,
-                       outputs=Trained_model.layers[54].output)
+                       outputs=Trained_model.layers[48].output)
 
-
+input_0 = test_gen.__getitem__(item)[0]
 features = model.predict(input_0)
 
 fig = plt.figure(figsize=(20, 15))
@@ -121,6 +146,15 @@ plt.show()
 im = plt.imshow(features.mean(axis=3).squeeze(), cmap='gray')
 plt.colorbar(im, fraction=0.046, pad=0.04)
 
+fig = plt.figure(figsize=(10, 8))
+gs = gridspec.GridSpec(6, 9)
+gs.update(wspace=0.8, hspace=0.5)
+ax1 = fig.add_subplot(gs[:6, 0:3])
+ax1.imshow(np.uint8(snap), cmap='gray')
+ax2 = fig.add_subplot(gs[:6 , 3:6])
+ax2.imshow(np.uint8(timex), cmap='gray')
+ax2 = fig.add_subplot(gs[:6 , 6:])
+ax2.imshow(np.uint8(test_gen.__getitem__(item)[0].squeeze()[:, :, 2]*255), cmap='gray')
 
 ########################################
 #           Occlusion map              #
