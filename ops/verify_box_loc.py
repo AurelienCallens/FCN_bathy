@@ -20,8 +20,8 @@ zm_unique = final_df['Z_m'].sort_values().unique()
 bat_df = pd.read_csv("data_CNN/Data_processed/Processed_bathy.csv")
 
 
-zm = zm_unique[21]
-temp_df = final_df[final_df['Z_m'] == zm].reset_index( drop=True)
+zm = zm_unique[14]
+temp_df = final_df[final_df['Z_m'] == zm].reset_index(drop=True)
 temp_df['bathy'].unique()
 fp_snp = list(temp_df.loc[(temp_df['Type_img'] == 'snap'), 'Fp_img'])
 fp_tmx = list(temp_df.loc[(temp_df['Type_img'] == 'timex'), 'Fp_img'])
@@ -54,10 +54,10 @@ for i, file in enumerate(fp_snp[:10]):
     # Plot contour
     # CS = ax.contourf(x_mesh, y_mesh, z_mesh, alpha=0.2, cmap='jet',
     # levels=np.arange(-8, 8.5, 0.5))
-    CS = ax.contour(x_mesh, y_mesh, z_mesh, alpha=0.9, cmap='jet',
+    CS = ax.contour(x_mesh, y_mesh, z_mesh, alpha=0.6, cmap='jet',
                     levels=np.arange(-8, 8.5, 0.5))
     # Create a Rectangle patch
-    rect = patches.Rectangle((75, 100), 256, 256, linewidth=1.5,
+    rect = patches.Rectangle((100, 80), 256, 256, linewidth=1.5,
                              edgecolor='r', facecolor='none', linestyle='dashed')
     # Add the patch to the Axes
     ax.add_patch(rect)

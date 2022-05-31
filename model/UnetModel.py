@@ -138,7 +138,7 @@ class UNet():
         test_gen = self.data_generator('Test')
         val_gen = self.data_generator('Validation')
         train_gen = self.data_generator('Train')
-        
+
         print("Images flowing from: " + dir_name + "\n")
         print("Length of train generator: %d / Batch size: %d / Total items: %d \n" %
               (train_gen.__len__(),  batch_size, train_gen.__len__() * batch_size))
@@ -153,6 +153,6 @@ class UNet():
         check_nan_generator(val_gen)
         print('Test generator:')
         check_nan_generator(test_gen)
-        
+
         print("Plotting %d images from train generator ....\n"%(n_img))
         plot_output_generator(train_gen, n_img=n_img)

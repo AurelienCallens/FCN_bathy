@@ -13,10 +13,10 @@ from ops.img_processing import img_rotation, proj, crop_img, ffill
 
 # Settings
 output_size = 512
-fp_name = './data_CNN/Data_bathy_01_18_sup_1.1/'
+fp_name = './data_CNN/Data_new_all/'
 df_fp_img = './data_CNN/Data_processed/meta_df.csv'
 df_fp_bat = "./data_CNN/Data_processed/Processed_bathy.csv"
-tide_min = 1.1
+tide_min = None
 
 # Import df
 ## Img dataframe
@@ -31,7 +31,7 @@ final_df.sort_values('Date', ignore_index=True, inplace=True)
 final_df['Split'] = 'Train'
 
 ##### Test
-day_test = ['2017-03-28', '2018-01-31', '2021-03-03', '2021-06-21']
+day_test = ['2017-03-28', '2018-01-31', '2021-03-03', '2021-06-20']
 final_df.loc[final_df['Date'].apply(lambda x: x[:10] in day_test), 'Split'] = 'Test'
 
 ##### Validation
