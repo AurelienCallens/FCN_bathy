@@ -25,6 +25,17 @@ def check_nan_generator(img_generator):
         print("No Nan values in images!")
 
 
+def check_nan_generator_unique(img_generator):
+
+    img_generator
+    res_input = []
+    res_target = []
+    for i in range(img_generator.__len__()):
+        img = img_generator.__getitem__(i)
+        print("X:", np.isnan(img[0]).any())
+        print("y:", np.isnan(img[1]).any())
+
+        
 # Plot output of train generator
 
 

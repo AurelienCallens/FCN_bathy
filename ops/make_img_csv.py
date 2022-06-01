@@ -84,8 +84,8 @@ values_Z = ['(110, 170)',
 
 final_df['X_Y'] = np.select(cond_Z, values_Z)
 final_df['X_Y'] = '(100, 80)'
-# ind = (final_df['bathy'] == '2021-06-21')
-# final_df.loc[ind, 'X_Y'] = '(100, 110)'
+ind = (final_df['bathy'] == '2021-06-21')
+final_df.loc[ind, 'X_Y'] = '(100, 110)'
 
 final_df.drop_duplicates(subset=['Bn_img'], inplace=True, ignore_index=True)
 

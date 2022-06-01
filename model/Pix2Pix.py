@@ -224,7 +224,7 @@ class Pix2Pix():
         imgs_B = imgs_B.squeeze()
         fake_A = fake_A.squeeze()
 
-        _vmin, _vmax = np.min(imgs_A)-1, np.max(imgs_A)+1
+        _vmin, _vmax = np.min(imgs_A)-0.5, np.max(imgs_A)+0.5
 
         fig = plt.figure(figsize=(10, 8))
         gs = gridspec.GridSpec(2, 6)

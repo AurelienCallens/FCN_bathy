@@ -13,10 +13,10 @@ from ops.img_processing import img_rotation, proj, crop_img, ffill
 
 # Settings
 output_size = 512
-fp_name = './data_CNN/Data_new_all/'
+fp_name = './data_CNN/Data_new_sup_0.9/'
 df_fp_img = './data_CNN/Data_processed/meta_df.csv'
 df_fp_bat = "./data_CNN/Data_processed/Processed_bathy.csv"
-tide_min = None
+tide_min = 0.9
 
 # Import df
 ## Img dataframe

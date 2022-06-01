@@ -22,7 +22,7 @@ drop_rate = 0.2
 
 # 2) FCN training parameters
 batch_size = 6
-n_epochs = 500
+n_epochs = 10
 lr = 0.002
 optimizer = tf.keras.optimizers.Nadam()
 #optimizer = tf.keras.optimizers.SGD(momentum=0.9)
@@ -38,7 +38,7 @@ epoch_patience = 20
 
 
 # 4) File paths
-dir_name = "Data_sup_1.1"
+dir_name = "Data_new_sup_0.9"
 
 train_input_img_paths, train_target_img_paths = initialize_file_path(dir_name, 'Train')
 val_input_img_paths, val_target_img_paths = initialize_file_path(dir_name, 'Validation')

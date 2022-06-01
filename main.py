@@ -19,8 +19,8 @@ import matplotlib.gridspec as gridspec
 from scipy.ndimage import gaussian_filter
 
 # 0) Initialize session
-mode = 'cpu'
-#mode = 'gpu'
+#mode = 'cpu'
+mode = 'gpu'
 start_tf_session(mode)
 
 # keras seed fixing
@@ -35,8 +35,10 @@ Unet_model = UNet(size=img_size, bands=n_channels)
 model = Unet_model.build()
 model.summary()
 
+#check_nan_generator_unique(Unet_model.data_generator('Train'))
 # Check results of train gen
 #Unet_model.verify_generators(n_img=2)
+plot_output_generator(Unet_model.data_generator('Train'), n_img=5)
 
 # Train the model
 Trained_model = Unet_model.train()
@@ -52,6 +54,7 @@ Trained_model[0].evaluate(test_gen)
 plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
 
 tf.keras.models.save_model(Trained_model[0], name)
+
 
 # 2) Pix2pix network
 
@@ -72,8 +75,8 @@ network.train(epochs=100, sample_interval=1, img_index=9)
 
 # Save the model
 
-tf.keras.models.save_model(network.generator, 'trained_models/cGAN_data_sup_1.1_01_31_noise_binary_loss')
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_data_sup_1.1_noise_binary_loss',
+tf.keras.models.save_model(network.generator, 'trained_models/cGAN_data_sup_0.9_flip')
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_data_sup_0.9',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'rmse': root_mean_squared_error,
                                                            'ssim': ssim,
@@ -86,7 +89,7 @@ Trained_model.compile(optimizer=optimizer, loss='mse', metrics=[root_mean_square
 
 Trained_model.evaluate(network.test_gen)
 
-
+import os
 
 for i in range(network.test_gen.__len__()):
 
@@ -120,6 +123,6 @@ for i in range(network.test_gen.__len__()):
     ax4.title.set_text('True bathy')
     ax5.title.set_text('Pred. bathy')
     #plt.show()
-    plt.savefig('Predictions/' + basename_file + '.png')
+    plt.savefig('Predictions_new_data/' + basename_file + '.png')
     plt.close()
 

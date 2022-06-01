@@ -23,8 +23,8 @@ from scipy.ndimage import gaussian_filter
 
 # 0) Initialize session
 #mode = 'cpu'
-#mode = 'gpu'
-#start_tf_session(mode)
+mode = 'gpu'
+start_tf_session(mode)
 
 # keras seed fixing
 seed(42)
@@ -36,7 +36,7 @@ tf.random.set_seed(42)
 # 1) Load a model
 Unet_model = UNet(size=img_size, bands=n_channels)
 
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_data_sup_1.1_noise_binary_loss',
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_data_new',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'pred_min':pred_min,
                                                            'pred_max':pred_max},
@@ -227,7 +227,7 @@ acc_array['std'] = list(map(np.mean, preds_std))
 
 acc_array['Date'] = list(map(lambda x: os.path.basename(x)[:-4], test_input_img_paths))
 #acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H_%M_%S")
-acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H_%M_%S")
+acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H:%M:%S")
 
 tide_wave_cond = pd.read_csv('data_CNN/Data_processed/meta_df.csv')[['Date', 'bathy', 'Tide', 'Hs_m', 'Tp_m', 'Dir_m']]
 tide_wave_cond['Date']= pd.to_datetime(tide_wave_cond['Date'], format="%Y-%m-%d %H:%M:%S")
@@ -241,4 +241,4 @@ acc_array.mean()
 acc_array['rip'] = 0
 acc_array.loc[acc_array['bathy'].isin( ['2017-03-27', '2018-01-31']), 'rip'] = 1
 
-acc_array.to_csv('Accuracy_test_set.csv')
+acc_array.to_csv('Accuracy_test_set_new.csv')
