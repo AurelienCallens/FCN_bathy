@@ -58,7 +58,7 @@ class Pix2Pix():
         self.gf = 16
         self.df = 8
         self.noise_std = 0.05
-        self.drop_rate = 0.2
+        self.drop_rate = 0.3
         optimizer = Adam(0.0002, 0.5)
         optimizer_disc = SGD(0.0002)
         # Build and compile the discriminator

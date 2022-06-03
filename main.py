@@ -75,8 +75,8 @@ network.train(epochs=100, sample_interval=1, img_index=9)
 
 # Save the model
 
-tf.keras.models.save_model(network.generator, 'trained_models/cGAN_data_sup_0.9_flip')
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_data_sup_0.9',
+tf.keras.models.save_model(network.generator, 'trained_models/cGAN_data_sup_0.9_flip_2')
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_data_sup_0.9_flip_2',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'rmse': root_mean_squared_error,
                                                            'ssim': ssim,
@@ -100,7 +100,7 @@ for i in range(network.test_gen.__len__()):
     imgs_B = imgs_B.squeeze()
     fake_A = fake_A.squeeze()
 
-    _vmin, _vmax = np.min(imgs_A)-1, np.max(imgs_A)+1
+    _vmin, _vmax = np.min(imgs_A)-1, np.max(imgs_A) + 1
 
     fig = plt.figure(figsize=(10, 8))
     gs = gridspec.GridSpec(2, 6)
@@ -122,7 +122,7 @@ for i in range(network.test_gen.__len__()):
     ax3.title.set_text('Env. Cond.')
     ax4.title.set_text('True bathy')
     ax5.title.set_text('Pred. bathy')
-    #plt.show()
-    plt.savefig('Predictions_new_data/' + basename_file + '.png')
-    plt.close()
+    plt.show()
+    #plt.savefig('Predictions_new_data/' + basename_file + '.png')
+    #plt.close()
 
