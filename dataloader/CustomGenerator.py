@@ -18,7 +18,7 @@ class CustomGenerator(keras.utils.Sequence):
         self.bands = bands
         self.split = split
 
-        if split in ['Validation', 'Test']:
+        if split in ['Validation', 'Test', 'Train_no_aug']:
             self.augmentor = ImageDataGenerator(rescale=1/255)
 
         elif split == 'Train':

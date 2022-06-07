@@ -32,6 +32,14 @@ class UNet():
                                    target_img_paths=train_target_img_paths,
                                    split='Train')
             return(train_gen)
+        if split == 'Train_no_aug':
+            train_gen = CustomGenerator(batch_size=1,
+                                   img_size=self.img_size,
+                                   bands=self.bands,
+                                   input_img_paths=train_input_img_paths,
+                                   target_img_paths=train_target_img_paths,
+                                   split='Train_no_aug')
+            return(train_gen)
         if split == 'Validation':
             val_gen = CustomGenerator(batch_size=self.batch_size,
                                  img_size=self.img_size,

@@ -22,8 +22,8 @@ from tensorflow.keras.models import Model
 from scipy.ndimage import gaussian_filter
 
 # 0) Initialize session
-#mode = 'cpu'
-mode = 'gpu'
+mode = 'cpu'
+#mode = 'gpu'
 start_tf_session(mode)
 
 # keras seed fixing
@@ -47,12 +47,13 @@ Trained_model.compile(optimizer=optimizer, loss='mse', metrics=[root_mean_square
 test_gen = Unet_model.data_generator('Test')
 Trained_model.evaluate(test_gen)
 
-train_gen = Unet_model.data_generator('Train')
+train_gen = Unet_model.data_generator('Train_no_aug')
 Trained_model.evaluate(train_gen)
 
-preds = Trained_model.predict(test_gen)
+preds = Trained_model.predict(train_gen)
 
-plot_predictions(test_generator=test_gen, predictions=preds, every_n=5)
+
+plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
 
 ########################################
 # Display predictions with uncertainty #
@@ -162,6 +163,7 @@ ax2.imshow(np.uint8(test_gen.__getitem__(item)[0].squeeze()[:, :, 2]*255), cmap=
 
 
 img = input_0[0]
+true_0 = test_gen.__getitem__(item)[1]
 
 def apply_grey_patch(image, top_left_x, top_left_y, patch_size):
     patched_image = np.array(image, copy=True)
@@ -196,8 +198,9 @@ plt.colorbar(im,  fraction=0.046, pad=0.04)
 ########################################
 preds = []
 preds_std = []
+
 for i in range(test_gen.__len__()):
-    pred_number = 50
+    pred_number = 5
     item = i
     true_0 = test_gen.__getitem__(item)[1]
     input_0 = test_gen.__getitem__(item)[0]
@@ -227,7 +230,7 @@ acc_array['std'] = list(map(np.mean, preds_std))
 
 acc_array['Date'] = list(map(lambda x: os.path.basename(x)[:-4], test_input_img_paths))
 #acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H_%M_%S")
-acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H:%M:%S")
+acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H_%M_%S")
 
 tide_wave_cond = pd.read_csv('data_CNN/Data_processed/meta_df.csv')[['Date', 'bathy', 'Tide', 'Hs_m', 'Tp_m', 'Dir_m']]
 tide_wave_cond['Date']= pd.to_datetime(tide_wave_cond['Date'], format="%Y-%m-%d %H:%M:%S")
