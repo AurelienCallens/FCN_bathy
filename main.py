@@ -37,7 +37,7 @@ model.summary()
 
 #check_nan_generator_unique(Unet_model.data_generator('Train'))
 # Check results of train gen
-#Unet_model.verify_generators(n_img=2)
+# Unet_model.verify_generators(n_img=2)
 plot_output_generator(Unet_model.data_generator('Train'), n_img=5)
 
 # Train the model
@@ -71,12 +71,12 @@ network.sample_images(10)
 discri = network.discriminator.predict([network.test_gen.__getitem__(0)[1],
                                network.test_gen.__getitem__(0)[0]])
 
-network.train(epochs=100, sample_interval=1, img_index=9)
+network.train(epochs=100, sample_interval=1, img_index=10)
 
 # Save the model
 
-tf.keras.models.save_model(network.generator, 'trained_models/cGAN_data_sup_0.9_flip_2')
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_data_sup_0.9_flip_2',
+tf.keras.models.save_model(network.generator, 'trained_models/cGAN_low_window_s0.9_noflip_2018')
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_low_window_s0.9_noflip_2018',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'rmse': root_mean_squared_error,
                                                            'ssim': ssim,
@@ -122,7 +122,7 @@ for i in range(network.test_gen.__len__()):
     ax3.title.set_text('Env. Cond.')
     ax4.title.set_text('True bathy')
     ax5.title.set_text('Pred. bathy')
-    plt.show()
-    #plt.savefig('Predictions_new_data/' + basename_file + '.png')
-    #plt.close()
+    #plt.show()
+    plt.savefig('Predictions_data_low_2018/' + basename_file + '.png')
+    plt.close()
 

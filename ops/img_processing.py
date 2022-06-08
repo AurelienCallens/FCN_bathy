@@ -15,6 +15,8 @@ from rasterio.windows import Window
 from rasterio.crs import CRS
 from rasterio.warp import reproject, Resampling, calculate_default_transform
 
+proj_rot = "+proj=omerc +lat_0=43.483179 +lonc=-1.560958 +alpha=-40 +k=1 +x_0=0 +y_0=0 +gamma=0 +datum=WGS84 +towgs84=0,0,0,0,0,0,0  +units=m +no_defs"
+
 
 def img_rotation(data_fp):
     data = rasterio.open(data_fp)
@@ -38,7 +40,7 @@ def img_rotation(data_fp):
     # Open raster file
     data = rasterio.open(raster_name)
     # Reproject on new CRS with rotation
-    proj = "+proj=omerc +lat_0=43.483179 +lonc=-1.560958 +alpha=-45 +k=1 +x_0=0 +y_0=0 +gamma=0 +datum=WGS84 +towgs84=0,0,0,0,0,0,0  +units=m +no_defs"
+    proj = proj_rot
     with rasterio.Env():
         # Source file
         rows, cols = data.shape
@@ -62,7 +64,6 @@ def img_rotation(data_fp):
     os.remove(raster_name)
     return([test[0], transform])
 
-proj = "+proj=omerc +lat_0=43.483179 +lonc=-1.560958 +alpha=-45 +k=1 +x_0=0 +y_0=0 +gamma=0 +datum=WGS84 +towgs84=0,0,0,0,0,0,0  +units=m +no_defs"
 
 def crop_img(img_mat, img_trans, win_corner, win_size):
 

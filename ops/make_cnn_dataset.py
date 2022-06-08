@@ -9,11 +9,11 @@ from rasterio.crs import CRS
 from shapely.geometry import Point
 from scipy.interpolate import griddata
 from sklearn.preprocessing import MinMaxScaler
-from ops.img_processing import img_rotation, proj, crop_img, ffill
+from ops.img_processing import img_rotation, proj_rot, crop_img, ffill
 
 # Settings
 output_size = 512
-fp_name = './data_CNN/Data_new_sup_0.9/'
+fp_name = './data_CNN/Data_low_window_2018/'
 df_fp_img = './data_CNN/Data_processed/meta_df.csv'
 df_fp_bat = "./data_CNN/Data_processed/Processed_bathy.csv"
 tide_min = 0.9
@@ -99,7 +99,7 @@ for date in date_unique:
     ## Prepare bathymetric data
     bathy_survey = temp_df.loc[0, 'bathy']
     bat = bat_df[['x', 'y', bathy_survey]]
-    dst_crs = CRS.from_proj4(proj)
+    dst_crs = CRS.from_proj4(proj_rot)
     pts = list(map(lambda x: Point(x), np.array(bat[['x', 'y']])))
     gdf_g = gpd.GeoDataFrame(bat, geometry=pts, crs=dst_crs)
 

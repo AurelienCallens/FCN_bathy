@@ -26,7 +26,7 @@ class CustomGenerator(keras.utils.Sequence):
                                                 rescale=1/255)
             self.shift_augmentor = ImageDataGenerator(height_shift_range=shift_range,
                                                       width_shift_range=shift_range,
-                                                      horizontal_flip=True,
+                                                      horizontal_flip=False,
                                                       vertical_flip=False)
         else:
             print('Wrong split type!')

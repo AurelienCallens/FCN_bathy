@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from rasterio.crs import CRS
 from scipy.interpolate import griddata
-from ops.img_processing import img_rotation, proj
+from ops.img_processing import img_rotation, proj_rot
 from rasterio.plot import show
 from shapely.geometry import Point
 
@@ -36,7 +36,7 @@ for i, file in enumerate(fp_snp[:10]):
     # Load bathymetric data
     bathy_survey = list(temp_df.loc[(temp_df['Type_img'] == 'snap'), 'bathy'])[i]
     bat = bat_df[['x', 'y', bathy_survey]]
-    dst_crs = CRS.from_proj4(proj)
+    dst_crs = CRS.from_proj4(proj_rot)
     pts = list(map(lambda x: Point(x), np.array(bat[['x', 'y']])))
     gdf_g = gpd.GeoDataFrame(bat, geometry=pts, crs=dst_crs)
 
@@ -57,7 +57,7 @@ for i, file in enumerate(fp_snp[:10]):
     CS = ax.contour(x_mesh, y_mesh, z_mesh, alpha=0.6, cmap='jet',
                     levels=np.arange(-8, 8.5, 0.5))
     # Create a Rectangle patch
-    rect = patches.Rectangle((100, 80), 256, 256, linewidth=1.5,
+    rect = patches.Rectangle((80, 100), 256, 256, linewidth=1.5,
                              edgecolor='r', facecolor='none', linestyle='dashed')
     # Add the patch to the Axes
     ax.add_patch(rect)

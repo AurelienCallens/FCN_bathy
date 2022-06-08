@@ -38,7 +38,7 @@ epoch_patience = 20
 
 
 # 4) File paths
-dir_name = "Data_new_sup_0.9"
+dir_name = "Data_low_window_2018"
 
 train_input_img_paths, train_target_img_paths = initialize_file_path(dir_name, 'Train')
 val_input_img_paths, val_target_img_paths = initialize_file_path(dir_name, 'Validation')
