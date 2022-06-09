@@ -36,7 +36,7 @@ tf.random.set_seed(42)
 # 1) Load a model
 Unet_model = UNet(size=img_size, bands=n_channels)
 
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_data_new',
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_low_window_s0.9_noflip',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'pred_min':pred_min,
                                                            'pred_max':pred_max},
@@ -50,10 +50,10 @@ Trained_model.evaluate(test_gen)
 train_gen = Unet_model.data_generator('Train_no_aug')
 Trained_model.evaluate(train_gen)
 
-preds = Trained_model.predict(train_gen)
+preds = Trained_model.predict(test_gen)
 
 
-plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
+plot_predictions(test_generator=test_gen, predictions=preds, every_n=4)
 
 ########################################
 # Display predictions with uncertainty #
