@@ -19,8 +19,8 @@ import matplotlib.gridspec as gridspec
 from scipy.ndimage import gaussian_filter
 
 # 0) Initialize session
-#mode = 'cpu'
-mode = 'gpu'
+mode = 'cpu'
+#mode = 'gpu'
 start_tf_session(mode)
 
 # keras seed fixing

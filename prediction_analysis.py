@@ -20,6 +20,7 @@ from executor.tf_init import start_tf_session
 import matplotlib.gridspec as gridspec
 from tensorflow.keras.models import Model
 from scipy.ndimage import gaussian_filter
+import plotly.express as px
 
 # 0) Initialize session
 mode = 'cpu'
@@ -36,7 +37,7 @@ tf.random.set_seed(42)
 # 1) Load a model
 Unet_model = UNet(size=img_size, bands=n_channels)
 
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_low_window_s0.9_noflip',
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_low_window_s0.9_flip',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'pred_min':pred_min,
                                                            'pred_max':pred_max},
@@ -77,7 +78,7 @@ def averaged_pred(test_gen, Trained_model, rep):
         err_pred.append(np.abs(true_0.squeeze() - pred_0.mean(axis=2)))
     return [avg_pred, std_pred, err_pred]
 
-avg_pred, std_pred, err_pred = averaged_pred(test_gen, Trained_model, 20)
+avg_pred, std_pred, err_pred = averaged_pred(test_gen, Trained_model, 10)
 
 
 item = 20
@@ -196,27 +197,16 @@ plt.colorbar(im,  fraction=0.046, pad=0.04)
 ########################################
 # Accuracy vs environmental conditions #
 ########################################
-preds = []
-preds_std = []
-
-for i in range(test_gen.__len__()):
-    pred_number = 5
-    item = i
-    true_0 = test_gen.__getitem__(item)[1]
-    input_0 = test_gen.__getitem__(item)[0]
-    pred_0 = Trained_model.predict(test_gen.__getitem__(item)[0]).squeeze()
-
-    for i in range(pred_number-1):
-        pred_0 = np.dstack([pred_0 , Trained_model.predict(test_gen.__getitem__(item)[0]).squeeze()])
-    preds.append(pred_0.mean(axis=2))
-    preds_std.append(pred_0.std(axis=2))
 
 
 #preds = Trained_model.predict(test_gen)
 
 true = np.stack([ test_gen.__getitem__(i)[1] for i in range(test_gen.__len__())], axis=0)
+X = np.stack([ test_gen.__getitem__(i)[0][:,:,:, :2].squeeze() for i in range(test_gen.__len__())], axis=0)
 
-
+true = list(map(lambda x: np.round(x,1), true))
+X = list(map(lambda x: np.round(x,2), X))
+ 
 def calculate_metrics(true, pred):
     return([root_mean_squared_error(true, pred).numpy(),
             absolute_error(true, pred).numpy(),
@@ -224,9 +214,13 @@ def calculate_metrics(true, pred):
             ssim(true, pred).numpy()[0],
             ms_ssim(true, pred).numpy()[0]])
 
-acc_array = np.array(list(map(lambda x, y: calculate_metrics(x, np.expand_dims(y,2)), true, preds)))
+acc_array = np.array(list(map(lambda x, y: calculate_metrics(x, np.expand_dims(y,2)), true, avg_pred)))
 acc_array = pd.DataFrame(acc_array, columns=('rmse', 'mae', 'pnsr', 'ssim', 'ms_ssim'))
-acc_array['std'] = list(map(np.mean, preds_std))
+#acc_array['std'] = list(map(np.mean, preds_std))
+#acc_array['std'] = std_pred
+acc_array['true'] = true
+acc_array['input'] = X
+acc_array['pred'] = list(map(lambda x: np.round(x,2), avg_pred))
 
 acc_array['Date'] = list(map(lambda x: os.path.basename(x)[:-4], test_input_img_paths))
 #acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H_%M_%S")
@@ -235,7 +229,7 @@ acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H_%M_%S"
 tide_wave_cond = pd.read_csv('data_CNN/Data_processed/meta_df.csv')[['Date', 'bathy', 'Tide', 'Hs_m', 'Tp_m', 'Dir_m']]
 tide_wave_cond['Date']= pd.to_datetime(tide_wave_cond['Date'], format="%Y-%m-%d %H:%M:%S")
 
-acc_array = pd.merge(acc_array, tide_wave_cond, on='Date', how='inner').drop_duplicates(ignore_index=True)
+acc_array = pd.merge(acc_array, tide_wave_cond, on='Date', how='inner').drop_duplicates('rmse', ignore_index=True)
 
 
 acc_array.mean()
@@ -244,4 +238,34 @@ acc_array.mean()
 acc_array['rip'] = 0
 acc_array.loc[acc_array['bathy'].isin( ['2017-03-27', '2018-01-31']), 'rip'] = 1
 
+
 acc_array.to_csv('Accuracy_test_set_new.csv')
+
+########################################
+# Error map vs Tide                    #
+########################################
+bathy = '2017-03-27'
+sel_df = acc_array[acc_array['bathy'] == '2017-03-27']
+sel_df['Err'] = np.abs(sel_df['true'] - sel_df['pred'])
+
+i = 0
+
+def color_vec(df, i):
+    vec = np.repeat('blue', len(df))
+    vec[i] = 'red'
+    return(vec)
+
+plt.imshow(sel_df['input'][i][:,:,0]*-1, cmap='Greys')
+plt.imshow(sel_df['input'][i][:,:,1]*-1, cmap='Greys')
+plt.scatter('Date', 'Tide', data = sel_df, c=color_vec(sel_df,i))
+
+_vmin, _vmax = np.min(sel_df['true'][i])-1, np.max(sel_df['true'][i])+1
+plt.imshow(sel_df['true'][i], cmap='jet', vmin=_vmin, vmax=_vmax)
+plt.imshow(sel_df['pred'][i], cmap='jet', vmin=_vmin, vmax=_vmax)
+plt.imshow(sel_df['Err'][i], cmap='inferno')
+
+
+import pickle
+
+with open('df.pickle', 'wb') as handle:
+    pickle.dump(acc_array, handle, protocol=pickle.HIGHEST_PROTOCOL)
