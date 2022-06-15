@@ -26,36 +26,36 @@ class UNet():
     def data_generator(self, split):
         if split == 'Train':
             train_gen = CustomGenerator(batch_size=self.batch_size,
-                                   img_size=self.img_size,
-                                   bands=self.bands,
-                                   input_img_paths=train_input_img_paths,
-                                   target_img_paths=train_target_img_paths,
-                                   split='Train')
+                                        img_size=self.img_size,
+                                        bands=self.bands,
+                                        input_img_paths=train_input_img_paths,
+                                        target_img_paths=train_target_img_paths,
+                                        split='Train')
             return(train_gen)
         if split == 'Train_no_aug':
             train_gen = CustomGenerator(batch_size=1,
-                                   img_size=self.img_size,
-                                   bands=self.bands,
-                                   input_img_paths=train_input_img_paths,
-                                   target_img_paths=train_target_img_paths,
-                                   split='Train_no_aug')
+                                        img_size=self.img_size,
+                                        bands=self.bands,
+                                        input_img_paths=train_input_img_paths,
+                                        target_img_paths=train_target_img_paths,
+                                        split='Train_no_aug')
             return(train_gen)
         if split == 'Validation':
             val_gen = CustomGenerator(batch_size=self.batch_size,
-                                 img_size=self.img_size,
-                                 bands=self.bands,
-                                 input_img_paths=val_input_img_paths,
-                                 target_img_paths=val_target_img_paths,
-                                 split='Validation')
+                                      img_size=self.img_size,
+                                      bands=self.bands,
+                                      input_img_paths=val_input_img_paths,
+                                      target_img_paths=val_target_img_paths,
+                                      split='Validation')
 
             return(val_gen)
         else:
             test_gen = CustomGenerator(batch_size=1,
-                                  img_size=self.img_size,
-                                  bands=self.bands,
-                                  input_img_paths=test_input_img_paths,
-                                  target_img_paths=test_target_img_paths,
-                                  split='Test')
+                                       img_size=self.img_size,
+                                       bands=self.bands,
+                                       input_img_paths=test_input_img_paths,
+                                       target_img_paths=test_target_img_paths,
+                                       split='Test')
             return(test_gen)
 
     def build(self):
@@ -76,7 +76,8 @@ class UNet():
             return conv_b, pool
 
         def decoder_block(input_layer, skip_features, num_filters):
-            x = Conv2DTranspose(num_filters, (2, 2), strides=2, padding="same")(input_layer)
+            x = Conv2DTranspose(num_filters, (2, 2), strides=2,
+                                padding="same")(input_layer)
             x = BatchNormalization(trainable=True)(x)
             x = GaussianNoise(NOISE_STD)(x)
             x = Dropout(DROP_RATE)(x, training=True)
@@ -117,7 +118,8 @@ class UNet():
         cb = TimingCallback()
         Checkpoint = ModelCheckpoint("trained_models/U_net.h5", save_best_only=True)
         if DECAY_LR:
-            schedule = StepDecay(initAlpha=INITIAL_LR, factor=FACTOR_DECAY, dropEvery=N_EPOCHS_DECAY)
+            schedule = StepDecay(initAlpha=INITIAL_LR, factor=FACTOR_DECAY,
+                                 dropEvery=N_EPOCHS_DECAY)
             return([cb, earlystop, Checkpoint, LearningRateScheduler(schedule)])
         else:
             return([cb, earlystop, Checkpoint])

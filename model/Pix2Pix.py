@@ -38,18 +38,18 @@ class Pix2Pix():
         # Configure data sequence generator
         self.dataset_name = 'test_res'
         self.train_gen = CustomGenerator(batch_size=self.batch_size,
-                               img_size=self.img_size,
-                               bands=self.channels,
-                               input_img_paths=train_input_img_paths+val_input_img_paths,
-                               target_img_paths=train_target_img_paths+val_target_img_paths,
-                               split='Train')
+                                         img_size=self.img_size,
+                                         bands=self.channels,
+                                         input_img_paths=train_input_img_paths+val_input_img_paths,
+                                         target_img_paths=train_target_img_paths+val_target_img_paths,
+                                         split='Train')
 
         self.test_gen = CustomGenerator(batch_size=1,
-                               img_size=self.img_size,
-                               bands=self.channels,
-                               input_img_paths=test_input_img_paths,
-                               target_img_paths=test_target_img_paths,
-                               split='Test')
+                                        img_size=self.img_size,
+                                        bands=self.channels,
+                                        input_img_paths=test_input_img_paths,
+                                        target_img_paths=test_target_img_paths,
+                                        split='Test')
 
         # Calculate output shape of D (PatchGAN)
         patch = int(self.img_rows / 2**4)
@@ -69,10 +69,6 @@ class Pix2Pix():
                                    metrics=['accuracy'],
                                    loss_weights=[0.5])
 
-        #-------------------------
-        # Construct Computational
-        #   Graph of Generator
-        #-------------------------
 
         # Build the generator
         self.generator = self.build_generator()
@@ -208,12 +204,14 @@ class Pix2Pix():
             elapsed_time = datetime.datetime.now() - start_time
             # Plot the progress
             if ((batchIndex + 1) == self.train_gen.__len__()) and (epoch % sample_interval == 0):
-                print ("[Epoch %d/%d] [Batch %d/%d] [D loss real: %f, acc: %3d%%] [D loss fake: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch+1, epochs,
-                                                                    batchIndex+1, self.train_gen.__len__(),
-                                                                    d_loss_real[0], 100*d_loss_real[1],
-                                                                    d_loss_fake[0], 100*d_loss_fake[1],
-                                                                    g_loss[0],
-                                                                    elapsed_time))
+                print("[Epoch %d/%d] [Batch %d/%d] [D loss real: %f, acc: %3d%%] [D loss fake: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch+1, epochs,
+                                                                                                                                         batchIndex+1, self.train_gen.__len__(),
+                                                                                                                                         d_loss_real[
+                                                                                                                                             0], 100*d_loss_real[1],
+                                                                                                                                         d_loss_fake[
+                                                                                                                                             0], 100*d_loss_fake[1],
+                                                                                                                                         g_loss[0],
+                                                                                                                                         elapsed_time))
                 self.sample_images(img_ind=img_index)
 
     def sample_images(self, img_ind):
