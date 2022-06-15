@@ -206,6 +206,9 @@ X = np.stack([ test_gen.__getitem__(i)[0][:,:,:, :2].squeeze() for i in range(te
 
 true = list(map(lambda x: np.round(x,1), true))
 X = list(map(lambda x: np.round(x,2), X))
+
+mean_snap = list(map(lambda x: np.round(np.median(x)*255,2),X))
+
  
 def calculate_metrics(true, pred):
     return([root_mean_squared_error(true, pred).numpy(),
@@ -221,6 +224,7 @@ acc_array = pd.DataFrame(acc_array, columns=('rmse', 'mae', 'pnsr', 'ssim', 'ms_
 acc_array['true'] = true
 acc_array['input'] = X
 acc_array['pred'] = list(map(lambda x: np.round(x,2), avg_pred))
+acc_array['m_snap'] = mean_snap
 
 acc_array['Date'] = list(map(lambda x: os.path.basename(x)[:-4], test_input_img_paths))
 #acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H_%M_%S")
@@ -231,6 +235,9 @@ tide_wave_cond['Date']= pd.to_datetime(tide_wave_cond['Date'], format="%Y-%m-%d 
 
 acc_array = pd.merge(acc_array, tide_wave_cond, on='Date', how='inner').drop_duplicates('rmse', ignore_index=True)
 
+
+
+plt.scatter(acc_array['rmse'], acc_array['m_snap'])
 
 acc_array.mean()
 

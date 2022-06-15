@@ -28,23 +28,24 @@ class Pix2Pix():
     def __init__(self, batch_size):
 
         # Input shape
-        self.img_rows = img_size[0]
-        self.img_cols = img_size[1]
-        self.channels = n_channels
+        self.img_rows = IMG_SIZE[0]
+        self.img_cols = IMG_SIZE[1]
+        self.img_size = IMG_SIZE
+        self.channels = N_CHANNELS
         self.batch_size = batch_size
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
 
         # Configure data sequence generator
         self.dataset_name = 'test_res'
         self.train_gen = CustomGenerator(batch_size=self.batch_size,
-                               img_size=img_size,
+                               img_size=self.img_size,
                                bands=self.channels,
                                input_img_paths=train_input_img_paths+val_input_img_paths,
                                target_img_paths=train_target_img_paths+val_target_img_paths,
                                split='Train')
 
         self.test_gen = CustomGenerator(batch_size=1,
-                               img_size=img_size,
+                               img_size=self.img_size,
                                bands=self.channels,
                                input_img_paths=test_input_img_paths,
                                target_img_paths=test_target_img_paths,
@@ -103,7 +104,7 @@ class Pix2Pix():
             d = LeakyReLU(alpha=0.2)(d)
             if bn:
                 d = BatchNormalization(momentum=0.8)(d)
-                d = GaussianNoise(noise_std)(d)
+                d = GaussianNoise(NOISE_STD)(d)
             return d
 
         def deconv2d(layer_input, skip_input, filters, f_size=4, dropout_rate=0):
@@ -113,7 +114,7 @@ class Pix2Pix():
             if dropout_rate:
                 u = Dropout(dropout_rate)(u)
             u = BatchNormalization(momentum=0.8)(u)
-            u = GaussianNoise(noise_std)(u)
+            u = GaussianNoise(NOISE_STD)(u)
             u = concatenate([u, skip_input])
             return u
 
@@ -195,7 +196,7 @@ class Pix2Pix():
             # Train the discriminators (original images = real / generated = Fake)
             d_loss_real = self.discriminator.train_on_batch([imgs_A, imgs_B], valid)
             d_loss_fake = self.discriminator.train_on_batch([fake_A, imgs_B], fake)
-            d_loss = np.add(d_loss_real, d_loss_fake)/2
+            #d_loss = np.add(d_loss_real, d_loss_fake)/2
 
             # -----------------
             #  Train Generator
@@ -207,7 +208,6 @@ class Pix2Pix():
             elapsed_time = datetime.datetime.now() - start_time
             # Plot the progress
             if ((batchIndex + 1) == self.train_gen.__len__()) and (epoch % sample_interval == 0):
-            #if ((batchIndex + 1) % 5 ==0):
                 print ("[Epoch %d/%d] [Batch %d/%d] [D loss real: %f, acc: %3d%%] [D loss fake: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch+1, epochs,
                                                                     batchIndex+1, self.train_gen.__len__(),
                                                                     d_loss_real[0], 100*d_loss_real[1],
@@ -236,10 +236,12 @@ class Pix2Pix():
         ax3 = fig.add_subplot(gs[0, 4:])
         ax3.imshow(np.uint8(imgs_B[:, :, 2]*255), cmap='gray')
         ax4 = fig.add_subplot(gs[1, 0:3])
-        im = ax4.imshow(imgs_A.astype('float32'), cmap='jet', vmin=_vmin, vmax=_vmax)
+        im = ax4.imshow(imgs_A.astype('float32'), cmap='jet', vmin=_vmin,
+                        vmax=_vmax)
         plt.colorbar(im, ax=ax4)
         ax5 = fig.add_subplot(gs[1, 3:])
-        im = ax5.imshow(gaussian_filter(fake_A.astype('float32'), sigma=2), cmap='jet', vmin=_vmin, vmax=_vmax)
+        im = ax5.imshow(gaussian_filter(fake_A.astype('float32'), sigma=2),
+                        cmap='jet', vmin=_vmin, vmax=_vmax)
         plt.colorbar(im, ax=ax5)
         ax1.title.set_text('Mean RGB Snap')
         ax2.title.set_text('Mean RGB Timex')

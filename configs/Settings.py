@@ -4,42 +4,43 @@
 
 import tensorflow as tf
 from ops.utils import initialize_file_path
+
 # 0) Input shape
-img_size = (512, 512)
-n_channels = 3
+IMG_SIZE = (512, 512)
+N_CHANNELS = 3
 
 # Data augmentation on train split
-brightness_r = [0.9, 1.1]
-shift_range = 0.3
+BRIGHT_R = [0.9, 1.1]
+SHIFT_R = 0.1
 
 # 1) FCN Structure
-activ = "relu"
-k_init = 'he_normal'
-pretrained_weights = False
-filters = 16
-noise_std = 0.05
-drop_rate = 0.2
+ACTIV = "relu"
+K_INIT = 'he_normal'
+PRETRAINED_W = False
+FILTERS = 16
+NOISE_STD = 0.05
+DROP_RATE = 0.2
 
 # 2) FCN training parameters
-batch_size = 6
-n_epochs = 100
-lr = 0.002
-optimizer = tf.keras.optimizers.Nadam()
-#optimizer = tf.keras.optimizers.SGD(momentum=0.9)
+BATCH_SIZE = 6
+EPOCHS = 100
+LR = 0.002
+OPTIMIZERS = tf.keras.optimizers.Nadam()
 
 # 3) Callback parameters
 # Decaying lr
-decaying_lr = True
-initial_lr = lr
-factor_decay = 0.8
-nb_epoch_decay = 20
+DECAY_LR = True
+INITIAL_LR = LR
+FACTOR_DECAY = 0.8
+N_EPOCHS_DECAY = 20
+
 # Early stopping
-epoch_patience = 20
+PATIENCE = 20
 
 
 # 4) File paths
-dir_name = "Data_low_window"
+DIR_NAME = "Data_low_window"
 
-train_input_img_paths, train_target_img_paths = initialize_file_path(dir_name, 'Train')
-val_input_img_paths, val_target_img_paths = initialize_file_path(dir_name, 'Validation')
-test_input_img_paths, test_target_img_paths = initialize_file_path(dir_name, 'Test')
+train_input_img_paths, train_target_img_paths = initialize_file_path(DIR_NAME, 'Train')
+val_input_img_paths, val_target_img_paths = initialize_file_path(DIR_NAME, 'Validation')
+test_input_img_paths, test_target_img_paths = initialize_file_path(DIR_NAME, 'Test')

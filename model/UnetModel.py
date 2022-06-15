@@ -21,7 +21,7 @@ class UNet():
         self.img_cols = size[1]
         self.img_size = size
         self.bands = bands
-        self.batch_size = batch_size
+        self.batch_size = BATCH_SIZE
 
     def data_generator(self, split):
         if split == 'Train':
@@ -65,9 +65,9 @@ class UNet():
             conv = BatchNormalization(trainable=True)(conv)
             conv = Conv2D(filters=filters, **conv_args)(conv)
             conv = BatchNormalization(trainable=True)(conv)
-            conv = GaussianNoise(noise_std)(conv)
+            conv = GaussianNoise(NOISE_STD)(conv)
             if drop_out:
-                conv = Dropout(drop_rate)(conv, training=True)
+                conv = Dropout(DROP_RATE)(conv, training=True)
             return conv
 
         def encoder_block(input_layer, num_filters, drop_out=True):
@@ -78,46 +78,46 @@ class UNet():
         def decoder_block(input_layer, skip_features, num_filters):
             x = Conv2DTranspose(num_filters, (2, 2), strides=2, padding="same")(input_layer)
             x = BatchNormalization(trainable=True)(x)
-            x = GaussianNoise(noise_std)(x)
-            x = Dropout(drop_rate)(x, training=True)
+            x = GaussianNoise(NOISE_STD)(x)
+            x = Dropout(DROP_RATE)(x, training=True)
             x = concatenate([x, skip_features], axis=3)
             x = conv_block(x, num_filters, drop_out=False)
             return x
 
         conv_args = {"kernel_size": 3,
-                     "activation": activ,
+                     "activation": ACTIV,
                      "padding": 'same',
-                     "kernel_initializer": k_init
+                     "kernel_initializer": K_INIT
                      }
 
         inputs = Input((self.img_rows, self.img_cols, self.bands))
 
-        s1, p1 = encoder_block(inputs, filters, drop_out=False)
-        s2, p2 = encoder_block(p1, filters*2, drop_out=True)
-        s3, p3 = encoder_block(p2, filters*4, drop_out=True)
-        s4, p4 = encoder_block(p3, filters*8, drop_out=True)
+        s1, p1 = encoder_block(inputs, FILTERS, drop_out=False)
+        s2, p2 = encoder_block(p1, FILTERS*2, drop_out=True)
+        s3, p3 = encoder_block(p2, FILTERS*4, drop_out=True)
+        s4, p4 = encoder_block(p3, FILTERS*8, drop_out=True)
 
-        b1 = conv_block(p4, filters*16, drop_out=True)
+        b1 = conv_block(p4, FILTERS*16, drop_out=True)
 
-        d1 = decoder_block(b1, s4, filters*8)
-        d2 = decoder_block(d1, s3, filters*4)
-        d3 = decoder_block(d2, s2, filters*2)
-        d4 = decoder_block(d3, s1, filters)
+        d1 = decoder_block(b1, s4, FILTERS*8)
+        d2 = decoder_block(d1, s3, FILTERS*4)
+        d3 = decoder_block(d2, s2, FILTERS*2)
+        d4 = decoder_block(d3, s1, FILTERS)
 
         outputs = Conv2D(1, 1, padding="same", activation=None)(d4)
 
         model = Model(inputs, outputs, name="U-Net")
-        model.compile(optimizer=optimizer, loss='mse',
+        model.compile(optimizer=OPTIMIZER, loss='mse',
                       metrics=[absolute_error, pred_min, pred_max])
 
         return(model)
 
     def callback(self):
-        earlystop = EarlyStopping(patience=epoch_patience)
+        earlystop = EarlyStopping(patience=PATIENCE)
         cb = TimingCallback()
         Checkpoint = ModelCheckpoint("trained_models/U_net.h5", save_best_only=True)
-        if decaying_lr:
-            schedule = StepDecay(initAlpha=initial_lr, factor=factor_decay, dropEvery=nb_epoch_decay)
+        if DECAY_LR:
+            schedule = StepDecay(initAlpha=INITIAL_LR, factor=FACTOR_DECAY, dropEvery=N_EPOCHS_DECAY)
             return([cb, earlystop, Checkpoint, LearningRateScheduler(schedule)])
         else:
             return([cb, earlystop, Checkpoint])
@@ -130,7 +130,7 @@ class UNet():
         # Train the network
         history = model.fit(
             train_generator,
-            epochs=n_epochs,
+            epochs=EPOCHS,
             validation_data=val_generator,
             callbacks=self.callback())
         tf.keras.backend.clear_session()

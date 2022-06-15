@@ -29,7 +29,7 @@ seed(42)
 tf.random.set_seed(42)
 
 # 1) Unet model
-Unet_model = UNet(size=img_size, bands=n_channels)
+Unet_model = UNet(size=IMG_SIZE, bands=N_CHANNELS)
 
 # Check FCN structure
 model = Unet_model.build()
@@ -37,7 +37,7 @@ model.summary()
 
 #check_nan_generator_unique(Unet_model.data_generator('Train'))
 # Check results of train gen
-# Unet_model.verify_generators(n_img=2)
+# Unet_model.verify_generators(n_img=15)
 plot_output_generator(Unet_model.data_generator('Train'), n_img=5)
 
 # Train the model
