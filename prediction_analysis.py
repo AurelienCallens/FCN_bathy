@@ -23,8 +23,8 @@ from scipy.ndimage import gaussian_filter
 import plotly.express as px
 
 # 0) Initialize session
-mode = 'cpu'
-#mode = 'gpu'
+#mode = 'cpu'
+mode = 'gpu'
 start_tf_session(mode)
 
 # keras seed fixing
@@ -35,15 +35,15 @@ tf.random.set_seed(42)
 
 
 # 1) Load a model
-Unet_model = UNet(size=img_size, bands=n_channels)
+Unet_model = UNet(size=IMG_SIZE, bands=N_CHANNELS)
 
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_low_window_s0.9_flip',
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_ext',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'pred_min':pred_min,
                                                            'pred_max':pred_max},
                                            compile=False)
 
-Trained_model.compile(optimizer=optimizer, loss='mse', metrics=[root_mean_squared_error,absolute_error, psnr, ssim, ms_ssim])
+Trained_model.compile(optimizer=OPTIMIZERS, loss='mse', metrics=[root_mean_squared_error,absolute_error, psnr, ssim, ms_ssim])
 
 test_gen = Unet_model.data_generator('Test')
 Trained_model.evaluate(test_gen)

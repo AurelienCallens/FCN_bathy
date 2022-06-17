@@ -56,7 +56,7 @@ class Pix2Pix():
         self.disc_patch = (patch, patch, 1)
 
         # Number of filters in the first layer of G and D
-        self.gf = 16
+        self.gf = 24
         self.df = 8
         self.noise_std = 0.05
         self.drop_rate = 0.3

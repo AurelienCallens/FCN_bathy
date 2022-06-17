@@ -17,15 +17,15 @@ SHIFT_R = 0.1
 ACTIV = "relu"
 K_INIT = 'he_normal'
 PRETRAINED_W = False
-FILTERS = 16
+FILTERS = 8
 NOISE_STD = 0.05
 DROP_RATE = 0.2
 
 # 2) FCN training parameters
-BATCH_SIZE = 6
+BATCH_SIZE = 4
 EPOCHS = 100
 LR = 0.002
-OPTIMIZERS = tf.keras.optimizers.Nadam()
+OPTIMIZER = tf.keras.optimizers.Nadam()
 
 # 3) Callback parameters
 # Decaying lr
@@ -39,7 +39,7 @@ PATIENCE = 20
 
 
 # 4) File paths
-DIR_NAME = "Data_low_window"
+DIR_NAME = "Data_ext"
 
 train_input_img_paths, train_target_img_paths = initialize_file_path(DIR_NAME, 'Train')
 val_input_img_paths, val_target_img_paths = initialize_file_path(DIR_NAME, 'Validation')

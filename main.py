@@ -19,8 +19,8 @@ import matplotlib.gridspec as gridspec
 from scipy.ndimage import gaussian_filter
 
 # 0) Initialize session
-mode = 'cpu'
-#mode = 'gpu'
+#mode = 'cpu'
+mode = 'gpu'
 start_tf_session(mode)
 
 # keras seed fixing
@@ -65,18 +65,18 @@ network.discriminator.summary()
 network.generator.summary()
 
 # Check generated image
-network.sample_images(10)
+network.sample_images(8)
 
 # Train the model
 discri = network.discriminator.predict([network.test_gen.__getitem__(0)[1],
                                network.test_gen.__getitem__(0)[0]])
 
-network.train(epochs=100, sample_interval=1, img_index=10)
+network.train(epochs=50, sample_interval=1, img_index=8)
 
 # Save the model
 
-tf.keras.models.save_model(network.generator, 'trained_models/cGAN_low_window_s0.9_noflip_2018')
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_low_window_s0.9_noflip_2018',
+tf.keras.models.save_model(network.generator, 'trained_models/cGAN_ext')
+Trained_model = tf.keras.models.load_model('trained_models/cGAN_ext',
                                            custom_objects={'absolute_error':absolute_error,
                                                            'rmse': root_mean_squared_error,
                                                            'ssim': ssim,
@@ -85,7 +85,7 @@ Trained_model = tf.keras.models.load_model('trained_models/cGAN_low_window_s0.9_
                                                            'pred_max':pred_max},
                                            compile=False)
 
-Trained_model.compile(optimizer=optimizer, loss='mse', metrics=[root_mean_squared_error, absolute_error, ssim, ms_ssim, pred_min, pred_max])
+Trained_model.compile(optimizer=OPTIMIZER, loss='mse', metrics=[root_mean_squared_error, absolute_error, ssim, ms_ssim, pred_min, pred_max])
 
 Trained_model.evaluate(network.test_gen)
 

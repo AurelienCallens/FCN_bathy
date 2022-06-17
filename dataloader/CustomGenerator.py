@@ -22,13 +22,13 @@ class CustomGenerator(keras.utils.Sequence):
             self.augmentor = ImageDataGenerator(rescale=1/255)
 
         elif split == 'Train':
-            self.augmentor = ImageDataGenerator(brightness_range=brightness_r,
+            self.augmentor = ImageDataGenerator(brightness_range=BRIGHT_R,
                                                 rescale=1/255)
-            self.shift_augmentor = ImageDataGenerator(height_shift_range=shift_range,
-                                                      width_shift_range=shift_range,
+            self.shift_augmentor = ImageDataGenerator(height_shift_range=SHIFT_R,
+                                                      width_shift_range=SHIFT_R,
                                                       horizontal_flip=True,
                                                       vertical_flip=True,
-                                                      rotation_range=90)
+                                                      rotation_range=20)
         else:
             print('Wrong split type!')
 
