@@ -44,7 +44,7 @@ plot_output_generator(Unet_model.data_generator('Train'), n_img=5)
 Trained_model = Unet_model.train()
 
 # Verification of the training loss
-name = 'trained_models/Model_4'
+name = 'trained_models/Model_5'
 plot_history(Trained_model[1])
 
 preds = Unet_model.predict()
