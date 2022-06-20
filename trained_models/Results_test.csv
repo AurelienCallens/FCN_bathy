@@ -1,0 +1,1 @@
+Name,Data,Input_size,Brightness_r,Shift_r,Rotation_r,V_flip,H_flip,Filters_G,Filters_D,Acti,Dropout,Opti,Lr,Factor_decay,Epoch decay,Early stop,Epoch_tr,Rmse,Mae,Ssim,Ms_ssim,Pred_min,Pred_max
