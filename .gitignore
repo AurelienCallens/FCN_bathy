@@ -7,6 +7,5 @@ ___pycache__/
 .git
 
 # Data repository
-Data/
-Data_2/
-Data_all/
+env/*
+*/___pycache__/*
