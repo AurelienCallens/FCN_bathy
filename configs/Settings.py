@@ -6,8 +6,8 @@ import tensorflow as tf
 from src.utils import initialize_file_path
 
 # Global settings
-MODE = "cpu"
-# MODE = "gpu"
+# MODE = "cpu"
+MODE = "gpu"
 CPU_CORES = 12
 
 # 0) Input shape
@@ -26,17 +26,17 @@ H_FLIP = True
 ACTIV = "relu"
 K_INIT = 'he_normal'
 PRETRAINED_W = False
-FILTERS = 4
+FILTERS = 16
 NOISE_STD = 0.05
 DROP_RATE = 0.2
 
 # Pix2pix Structure
-FILTERS_G = 8
+FILTERS_G = 16
 FILTERS_D = 8
 
 # 2) FCN training parameters
 BATCH_SIZE = 6
-EPOCHS = 1
+EPOCHS = 100
 LR = 0.002
 OPTIMIZER = tf.keras.optimizers.Nadam()
 OPTI_P = tf.keras.optimizers.Adam(0.0002, 0.5)
