@@ -148,6 +148,6 @@ if __name__ == '__main__':
     params_file = 'configs/Config_f16_norot_test.json'
 
     Bathy_inv = Bathy_inv_network(params_file)
-    #Bathy_inv.train_unet(check_gen=False)
+    Bathy_inv.train_unet(check_gen=False)
     Bathy_inv.train_Pix2pix()
     print("Entrainement fini!")
