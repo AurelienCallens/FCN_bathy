@@ -16,49 +16,61 @@ from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, con
 from tensorflow.keras.layers import BatchNormalization, Activation, ZeroPadding2D, GaussianNoise
 
 #Local import 
-from configs.Settings import *
+from src.utils import initialize_file_path
 from src.evaluation.metric_functions import *
 from src.dataloader.CustomGenerator import CustomGenerator
 from src.dataloader.seq_iterator_gan import ParallelIterator
 
 class Pix2Pix():
-    def __init__(self, batch_size):
+    def __init__(self, params):
 
-        # Input shape
-        self.img_rows = IMG_SIZE[0]
-        self.img_cols = IMG_SIZE[1]
-        self.img_size = IMG_SIZE
-        self.channels = N_CHANNELS
-        self.batch_size = batch_size
-        self.img_shape = (self.img_rows, self.img_cols, self.channels)
+        # Parameters
+        ## Input
+        self.train_input, self.train_target = initialize_file_path(params['Input']['DIR_NAME'], 'Train')
+        self.val_input, self.val_target = initialize_file_path(params['Input']['DIR_NAME'], 'Validation')
+        self.test_input, self.test_target = initialize_file_path(params['Input']['DIR_NAME'], 'Test')
+        self.IMG_SIZE = eval(params['Input']['IMG_SIZE'])
+        self.IMG_ROWS = self.IMG_SIZE[0]
+        self.IMG_COLS = self.IMG_SIZE[1]
+        self.BANDS = params['Input']['N_CHANNELS']
+        self.IMG_SHAPE = (self.IMG_ROWS, self.IMG_COLS, self.BANDS)
+
+        ## Network architectures
+        self.gf = params['Net_str']['FILTERS_G']
+        self.df = params['Net_str']['FILTERS_D']
+        self.ACTIV = params['Net_str']['ACTIV']
+        self.K_INIT = params['Net_str']['K_INIT']
+        self.FILTERS = params['Net_str']['FILTERS']
+        self.NOISE_STD = params['Net_str']['NOISE_STD']
+        self.DROP_RATE = params['Net_str']['DROP_RATE']
+
+        ## Training
+        self.EPOCHS = params['Train']['EPOCHS']
+        self.BATCH_SIZE = params['Train']['BATCH_SIZE']
+        self.LR = params['Train']['LR_P2P']
+        optimizer = Adam(self.LR, 0.5)
+        optimizer_disc = SGD(0.0002)
+
 
         # Configure data sequence generator
         self.dataset_name = 'test_res'
-        self.train_gen = CustomGenerator(batch_size=self.batch_size,
-                                         img_size=self.img_size,
-                                         bands=self.channels,
-                                         input_img_paths=train_input_img_paths+val_input_img_paths,
-                                         target_img_paths=train_target_img_paths+val_target_img_paths,
+        self.train_gen = CustomGenerator(batch_size=self.BATCH_SIZE,
+                                         params=params,
+                                         input_img_paths=self.train_input+self.val_input,
+                                         target_img_paths=self.train_target+self.val_target,
                                          split='Train')
 
         self.test_gen = CustomGenerator(batch_size=1,
-                                        img_size=self.img_size,
-                                        bands=self.channels,
-                                        input_img_paths=test_input_img_paths,
-                                        target_img_paths=test_target_img_paths,
+                                        params=params,
+                                        input_img_paths=self.test_input,
+                                        target_img_paths=self.test_target,
                                         split='Test')
 
         # Calculate output shape of D (PatchGAN)
-        patch = int(self.img_rows / 2**4)
+        patch = int(self.IMG_ROWS / 2**4)
         self.disc_patch = (patch, patch, 1)
 
-        # Number of filters in the first layer of G and D
-        self.gf = FILTERS_G
-        self.df = FILTERS_D
-        self.noise_std = 0.05
-        self.drop_rate = 0.3
-        optimizer = Adam(0.0002, 0.5)
-        optimizer_disc = SGD(0.0002)
+
         # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
         self.discriminator.compile(loss='binary_crossentropy',
@@ -71,8 +83,8 @@ class Pix2Pix():
         self.generator = self.build_generator()
 
         # Input images and their conditioning images
-        img_A = Input(shape=(512, 512, 1), name='target_image')
-        img_B = Input(shape=(512, 512, 3), name='input_image')
+        img_A = Input(shape=(self.IMG_ROWS, self.IMG_ROWS, 1), name='target_image')
+        img_B = Input(shape=(self.IMG_ROWS, self.IMG_ROWS, self.BANDS), name='input_image')
 
         # By conditioning on B generate a fake version of A
         fake_A = self.generator(img_B)
@@ -91,23 +103,29 @@ class Pix2Pix():
     def build_generator(self):
         """U-Net Generator"""
 
-        def conv2d(layer_input, filters, f_size=4, bn=True):
+        conv_args = {"kernel_size": 4,
+                     "activation": self.ACTIV,
+                     "padding": 'same',
+                     "kernel_initializer": self.K_INIT
+                     }
+
+        def conv2d(layer_input, filters, bn=True):
             """Layers used during downsampling"""
-            d = Conv2D(filters, kernel_size=f_size, strides=2, padding='same')(layer_input)
+            d = Conv2D(filters, strides=2, **conv_args)(layer_input)
             d = LeakyReLU(alpha=0.2)(d)
             if bn:
                 d = BatchNormalization(momentum=0.8)(d)
-                d = GaussianNoise(NOISE_STD)(d)
+                d = GaussianNoise(self.NOISE_STD)(d)
             return d
 
-        def deconv2d(layer_input, skip_input, filters, f_size=4, dropout_rate=0):
+        def deconv2d(layer_input, skip_input, filters, dropout_rate=0):
             """Layers used during upsampling"""
             u = UpSampling2D(size=2)(layer_input)
-            u = Conv2D(filters, kernel_size=f_size, strides=1, padding='same', activation='relu')(u)
+            u = Conv2D(filters,strides=1, **conv_args)(u)
             if dropout_rate:
                 u = Dropout(dropout_rate)(u)
             u = BatchNormalization(momentum=0.8)(u)
-            u = GaussianNoise(NOISE_STD)(u)
+            u = GaussianNoise(self.NOISE_STD)(u)
             u = concatenate([u, skip_input])
             return u
 
@@ -141,8 +159,8 @@ class Pix2Pix():
         def d_layer(layer_input, filters, f_size=4, bn=True):
             """Discriminator layer"""
             d = Conv2D(filters, kernel_size=f_size, strides=2, padding='same')(layer_input)
-            d = GaussianNoise(self.noise_std)(d)
-            d = Dropout(self.drop_rate)(d)
+            d = GaussianNoise(self.NOISE_STD)(d)
+            d = Dropout(self.DROP_RATE)(d)
             d = LeakyReLU(alpha=0.2)(d)
             if bn:
                 d = BatchNormalization(momentum=0.8)(d)
@@ -162,17 +180,17 @@ class Pix2Pix():
         validity = Activation('sigmoid')(validity)
         return Model([img_A, img_B], validity)
 
-    def train(self, epochs, sample_interval=5, img_index=1):
+    def train(self, sample_interval=5, img_index=1):
 
         start_time = datetime.datetime.now()
 
         # Adversarial loss ground truths
-        valid = np.ones((self.batch_size,) + self.disc_patch)
-        fake = np.zeros((self.batch_size,) + self.disc_patch)
+        valid = np.ones((self.BATCH_SIZE,) + self.disc_patch)
+        fake = np.zeros((self.BATCH_SIZE,) + self.disc_patch)
 
         for epoch, batchIndex, originalBatchIndex, xAndY in ParallelIterator(
                                        self.train_gen,
-                                       epochs,
+                                       self.EPOCHS,
                                        shuffle=False,
                                        use_on_epoch_end=True,
                                        workers=8,
@@ -201,7 +219,7 @@ class Pix2Pix():
             elapsed_time = datetime.datetime.now() - start_time
             # Plot the progress
             if ((batchIndex + 1) == self.train_gen.__len__()) and (epoch % sample_interval == 0):
-                print("[Epoch %d/%d] [Batch %d/%d] [D loss real: %f, acc: %3d%%] [D loss fake: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch+1, epochs,
+                print("[Epoch %d/%d] [Batch %d/%d] [D loss real: %f, acc: %3d%%] [D loss fake: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch+1, self.EPOCHS,
                                                                                                                                          batchIndex+1, self.train_gen.__len__(),
                                                                                                                                          d_loss_real[
                                                                                                                                              0], 100*d_loss_real[1],
@@ -209,9 +227,9 @@ class Pix2Pix():
                                                                                                                                              0], 100*d_loss_fake[1],
                                                                                                                                          g_loss[0],
                                                                                                                                          elapsed_time))
-                self.sample_images(img_ind=img_index)
+                self.sample_images(epoch, img_ind=img_index)
 
-    def sample_images(self, img_ind):
+    def sample_images(self, epoch, img_ind):
 
         imgs_B, imgs_A = self.test_gen.__getitem__(img_ind)
         fake_A = self.generator.predict(imgs_B)
@@ -243,4 +261,4 @@ class Pix2Pix():
         ax3.title.set_text('Env. Cond.')
         ax4.title.set_text('True bathy')
         ax5.title.set_text('Pred. bathy')
-        plt.show()
+        fig.savefig('trained_models/example_ouptut_epoch' + str(epoch) + '.png')

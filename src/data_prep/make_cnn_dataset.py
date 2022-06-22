@@ -151,6 +151,3 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, bathy_range, output
         plt.imshow(z_mesh)
         plt.show()
         """
-
-generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, bathy_range,
-                          output_size, tide_min, tide_max, test_bathy)

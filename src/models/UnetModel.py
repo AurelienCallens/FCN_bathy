@@ -6,8 +6,9 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.callbacks import LearningRateScheduler, EarlyStopping, ModelCheckpoint
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, Dropout, concatenate, BatchNormalization, Conv2DTranspose, GaussianNoise
+from tensorflow.keras.optimizers import Adam
 
-from configs.Settings import *
+from src.utils import initialize_file_path
 from src.evaluation.metric_functions import *
 from src.dataloader.CustomGenerator import CustomGenerator
 from src.evaluation.CallbackClasses import TimingCallback, StepDecay
@@ -16,45 +17,58 @@ from src.verification.verif_functions import plot_output_generator, check_nan_ge
 class UNet():
     """Unet Model Class"""
 
-    def __init__(self, size, bands):
-        self.img_rows = size[0]
-        self.img_cols = size[1]
-        self.img_size = size
-        self.bands = bands
-        self.batch_size = BATCH_SIZE
+    def __init__(self, params):
+
+        self.train_input, self.train_target = initialize_file_path(params['Input']['DIR_NAME'], 'Train')
+        self.val_input, self.val_target = initialize_file_path(params['Input']['DIR_NAME'], 'Validation')
+        self.test_input, self.test_target = initialize_file_path(params['Input']['DIR_NAME'], 'Test')
+        self.IMG_SIZE = eval(params['Input']['IMG_SIZE'])
+        self.BANDS = params['Input']['N_CHANNELS']
+
+        self.ACTIV = params['Net_str']['ACTIV']
+        self.K_INIT = params['Net_str']['K_INIT']
+        self.FILTERS = params['Net_str']['FILTERS']
+        self.NOISE_STD = params['Net_str']['NOISE_STD']
+        self.DROP_RATE = params['Net_str']['DROP_RATE']
+
+        self.BATCH_SIZE = params['Train']['BATCH_SIZE']
+        self.EPOCHS = params['Train']['EPOCHS']
+        self.LR = params['Train']['LR']
+
+        self.DECAY_LR = params['Callbacks']['DECAY_LR']
+        self.FACTOR_DECAY = params['Callbacks']['FACTOR_DECAY']
+        self.N_EPOCHS_DECAY = params['Callbacks']['N_EPOCHS_DECAY']
+        self.PATIENCE = params['Callbacks']['PATIENCE']
+        self.params = params
 
     def data_generator(self, split):
         if split == 'Train':
-            train_gen = CustomGenerator(batch_size=self.batch_size,
-                                        img_size=self.img_size,
-                                        bands=self.bands,
-                                        input_img_paths=train_input_img_paths,
-                                        target_img_paths=train_target_img_paths,
+            train_gen = CustomGenerator(batch_size=self.BATCH_SIZE,
+                                        params=self.params, 
+                                        input_img_paths=self.train_input,
+                                        target_img_paths=self.train_target,
                                         split='Train')
             return(train_gen)
         if split == 'Train_no_aug':
             train_gen = CustomGenerator(batch_size=1,
-                                        img_size=self.img_size,
-                                        bands=self.bands,
-                                        input_img_paths=train_input_img_paths,
-                                        target_img_paths=train_target_img_paths,
+                                        params=self.params,
+                                        input_img_paths=self.train_input,
+                                        target_img_paths=self.train_target,
                                         split='Train_no_aug')
             return(train_gen)
         if split == 'Validation':
-            val_gen = CustomGenerator(batch_size=self.batch_size,
-                                      img_size=self.img_size,
-                                      bands=self.bands,
-                                      input_img_paths=val_input_img_paths,
-                                      target_img_paths=val_target_img_paths,
+            val_gen = CustomGenerator(batch_size=self.BATCH_SIZE,
+                                      params=self.params,
+                                      input_img_paths=self.val_input,
+                                      target_img_paths=self.val_target,
                                       split='Validation')
 
             return(val_gen)
         else:
             test_gen = CustomGenerator(batch_size=1,
-                                       img_size=self.img_size,
-                                       bands=self.bands,
-                                       input_img_paths=test_input_img_paths,
-                                       target_img_paths=test_target_img_paths,
+                                       params=self.params,
+                                       input_img_paths=self.test_input,
+                                       target_img_paths=self.test_target,
                                        split='Test')
             return(test_gen)
 
@@ -65,9 +79,9 @@ class UNet():
             conv = BatchNormalization(trainable=True)(conv)
             conv = Conv2D(filters=filters, **conv_args)(conv)
             conv = BatchNormalization(trainable=True)(conv)
-            conv = GaussianNoise(NOISE_STD)(conv)
+            conv = GaussianNoise(self.NOISE_STD)(conv)
             if drop_out:
-                conv = Dropout(DROP_RATE)(conv, training=True)
+                conv = Dropout(self.DROP_RATE)(conv, training=True)
             return conv
 
         def encoder_block(input_layer, num_filters, drop_out=True):
@@ -79,47 +93,47 @@ class UNet():
             x = Conv2DTranspose(num_filters, (2, 2), strides=2,
                                 padding="same")(input_layer)
             x = BatchNormalization(trainable=True)(x)
-            x = GaussianNoise(NOISE_STD)(x)
-            x = Dropout(DROP_RATE)(x, training=True)
+            x = GaussianNoise(self.NOISE_STD)(x)
+            x = Dropout(self.DROP_RATE)(x, training=True)
             x = concatenate([x, skip_features], axis=3)
             x = conv_block(x, num_filters, drop_out=False)
             return x
 
         conv_args = {"kernel_size": 3,
-                     "activation": ACTIV,
+                     "activation": self.ACTIV,
                      "padding": 'same',
-                     "kernel_initializer": K_INIT
+                     "kernel_initializer": self.K_INIT
                      }
 
-        inputs = Input((self.img_rows, self.img_cols, self.bands))
+        inputs = Input((self.IMG_SIZE[0], self.IMG_SIZE[1], self.BANDS))
 
-        s1, p1 = encoder_block(inputs, FILTERS, drop_out=False)
-        s2, p2 = encoder_block(p1, FILTERS*2, drop_out=True)
-        s3, p3 = encoder_block(p2, FILTERS*4, drop_out=True)
-        s4, p4 = encoder_block(p3, FILTERS*8, drop_out=True)
+        s1, p1 = encoder_block(inputs, self.FILTERS, drop_out=False)
+        s2, p2 = encoder_block(p1, self.FILTERS*2, drop_out=True)
+        s3, p3 = encoder_block(p2, self.FILTERS*4, drop_out=True)
+        s4, p4 = encoder_block(p3, self.FILTERS*8, drop_out=True)
 
-        b1 = conv_block(p4, FILTERS*16, drop_out=True)
+        b1 = conv_block(p4, self.FILTERS*16, drop_out=True)
 
-        d1 = decoder_block(b1, s4, FILTERS*8)
-        d2 = decoder_block(d1, s3, FILTERS*4)
-        d3 = decoder_block(d2, s2, FILTERS*2)
-        d4 = decoder_block(d3, s1, FILTERS)
+        d1 = decoder_block(b1, s4, self.FILTERS*8)
+        d2 = decoder_block(d1, s3, self.FILTERS*4)
+        d3 = decoder_block(d2, s2, self.FILTERS*2)
+        d4 = decoder_block(d3, s1, self.FILTERS)
 
         outputs = Conv2D(1, 1, padding="same", activation=None)(d4)
 
         model = Model(inputs, outputs, name="U-Net")
-        model.compile(optimizer=OPTIMIZER, loss='mse',
+        model.compile(optimizer=Adam(self.LR), loss='mse',
                       metrics=[root_mean_squared_error, absolute_error, ssim, ms_ssim, pred_min, pred_max])
 
         return(model)
 
     def callback(self):
-        earlystop = EarlyStopping(patience=PATIENCE)
+        earlystop = EarlyStopping(patience=self.PATIENCE)
         cb = TimingCallback()
         Checkpoint = ModelCheckpoint("trained_models/U_net.h5", save_best_only=True)
-        if DECAY_LR:
-            schedule = StepDecay(initAlpha=INITIAL_LR, factor=FACTOR_DECAY,
-                                 dropEvery=N_EPOCHS_DECAY)
+        if self.DECAY_LR:
+            schedule = StepDecay(initAlpha=self.LR, factor=self.FACTOR_DECAY,
+                                 dropEvery=self.N_EPOCHS_DECAY)
             return([cb, earlystop, Checkpoint, LearningRateScheduler(schedule)])
         else:
             return([cb, earlystop, Checkpoint])
@@ -132,7 +146,7 @@ class UNet():
         # Train the network
         history = model.fit(
             train_generator,
-            epochs=EPOCHS,
+            epochs=self.EPOCHS,
             validation_data=val_generator,
             callbacks=self.callback())
         tf.keras.backend.clear_session()

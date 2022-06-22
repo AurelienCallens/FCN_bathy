@@ -7,27 +7,38 @@ Created on Thu Mar 24 13:43:32 2022
 """
 import os
 import pandas as pd
+import numpy as np
 import tensorflow as tf
 from datetime import datetime
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-from scipy.ndimage import gaussian_filter
 
-from configs.Settings import *
+from configs.Param import Param
+from configs.Settings_data import *
 from src.models.UnetModel import UNet
 from src.models.Pix2Pix import Pix2Pix
-from src.verification.verif_functions import *
+from src.data_prep.make_cnn_dataset import generate_data_folders_cnn
+from src.data_prep.make_img_csv import make_img_csv
 from src.evaluation.metric_functions import *
 from src.executor.tf_init import start_tf_session
 
 class Bathy_inv_network:
 
-    def __init__(self):
-        start_tf_session(MODE, CPU_CORES)
+    def __init__(self, params_file):
+        self.params = Param(params_file).load()
+        self.params_file = params_file
+        start_tf_session('cpu')
+
+    def generate_data_csv(self):
+
+        make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021)
+
+    def generate_cnn_dataset(self):
+
+        generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, bathy_range,
+                          output_size, tide_min, tide_max, test_bathy)
 
     def train_unet(self, check_gen=True):
 
-        Unet_model = UNet(size=IMG_SIZE, bands=N_CHANNELS)
+        Unet_model = UNet(self.params)
 
         # Check results of train gen
         if(check_gen):
@@ -38,64 +49,68 @@ class Bathy_inv_network:
         Trained_model = Unet_model.train()
         test_gen = Unet_model.data_generator('Test')
         self.save_model(Trained_model, test_gen, net="Unet")
+        tf.keras.backend.clear_session()
 
-    def train_Pix2pix(self, batch_size=6):
+    def train_Pix2pix(self):
 
-        network = Pix2Pix(batch_size)
+        network = Pix2Pix(self.params)
 
-        network.train(epochs=EPOCHS, sample_interval=10, img_index=8)
+        network.train(sample_interval=1, img_index=8)
         Trained_model = network.generator
         test_gen = network.test_gen
         self.save_model(Trained_model, test_gen, net="Pix2pix")
+        tf.keras.backend.clear_session()
 
     def save_model(self, Trained_model, test_gen, net='Unet'):
         # Saving the model and its performance
         if (net == 'Unet'):
             network = net
             epoch_tr = len(Trained_model[1].history['loss'])
-            filters_g= FILTERS
+            filters_g = self.params['Net_str']['FILTERS']
             filters_d = None
-            opti = 'Nadam'
-            lr = LR
-            fac_dec = DECAY_LR
-            ep_dec = N_EPOCHS_DECAY
-            early_s = PATIENCE
+            opti = 'Adam'
+            lr = self.params['Train']['LR']
+            fac_dec = self.params['Callbacks']['FACTOR_DECAY']
+            ep_dec = self.params['Callbacks']['N_EPOCHS_DECAY']
+            early_s = self.params['Callbacks']['PATIENCE']
             metrics = np.round(Trained_model[0].evaluate(test_gen), 4)
             model = Trained_model[0]
         else:
             network = net
-            epoch_tr = EPOCHS
-            filters_g = FILTERS_G
-            filters_d = FILTERS_D
+            epoch_tr = self.params['Train']['EPOCHS']
+            filters_g = self.params['Net_str']['FILTERS_G']
+            filters_d = self.params['Net_str']['FILTERS_D']
             opti = 'Adam'
-            lr = 0.0002
+            lr = self.params['Train']['LR_P2P']
             fac_dec = None
             ep_dec = None
             early_s = None
-            Trained_model.compile(optimizer=OPTI_P, loss='mse', metrics=[root_mean_squared_error, absolute_error, ssim, ms_ssim, pred_min, pred_max])
+            Trained_model.compile(optimizer=tf.keras.optimizers.Adam(lr, 0.5),
+                                  loss='mse', metrics=[root_mean_squared_error, absolute_error, ssim, ms_ssim, pred_min, pred_max])
             metrics = np.round(Trained_model.evaluate(test_gen), 4)
             model = Trained_model
 
         name = 'trained_models/{model}_{data_fp}_f{filters}_b{batch_size}_ep{epochs}_{date}'.format(model=network,
-                                                                                                    data_fp=DIR_NAME,
-                                                                                                    filters=FILTERS,
-                                                                                                    batch_size=BATCH_SIZE,
+                                                                                                    data_fp=self.params['Input']['DIR_NAME'],
+                                                                                                    filters=filters_g,
+                                                                                                    batch_size=self.params['Train']['BATCH_SIZE'],
                                                                                                     epochs=epoch_tr,
                                                                                                     date=datetime.now().strftime("%d-%m-%Y"))
 
 
         res_dict = {'Name': name,
-                    'Data': DIR_NAME,
-                    'Input_size': str(IMG_SIZE),
-                    'Brightness_r': str(BRIGHT_R),
-                    'Shift_r': SHIFT_R,
-                    'Rotation_r': ROT_R,
-                    'V_flip': V_FLIP,
-                    'H_flip': H_FLIP,
+                    'Data': self.params['Input']['DIR_NAME'],
+                    'Param_file': os.path.basename(self.params_file),
+                    'Input_size': str(self.params['Input']['IMG_SIZE']),
+                    'Brightness_r': str(self.params['Data_aug']['BRIGHT_R']),
+                    'Shift_r': self.params['Data_aug']['SHIFT_R'],
+                    'Rotation_r': self.params['Data_aug']['ROT_R'],
+                    'V_flip': self.params['Data_aug']['V_FLIP'],
+                    'H_flip': self.params['Data_aug']['H_FLIP'],
                     'Filters_G': filters_g,
                     'Filters_D': filters_d,
-                    'Acti': ACTIV,
-                    'Dropout': DROP_RATE,
+                    'Acti': self.params['Net_str']['ACTIV'],
+                    'Dropout': self.params['Net_str']['DROP_RATE'],
                     'Opti': opti,
                     'Lr': lr,
                     'Factor_decay': fac_dec,
@@ -108,7 +123,6 @@ class Bathy_inv_network:
                     'Ms_ssim': metrics[4],
                     'Pred_min': metrics[5],
                     'Pred_max': metrics[6]}
-
 
         tf.keras.models.save_model(model, name)
 
@@ -130,7 +144,10 @@ class Bathy_inv_network:
         return(Trained_model)
 
 if __name__ == '__main__':
-    Bathy_inv = Bathy_inv_network()
-    Bathy_inv.train_unet(check_gen=False)
+
+    params_file = 'configs/Config_f16_norot_test.json'
+
+    Bathy_inv = Bathy_inv_network(params_file)
+    #Bathy_inv.train_unet(check_gen=False)
     Bathy_inv.train_Pix2pix()
     print("Entrainement fini!")

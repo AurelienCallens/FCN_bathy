@@ -13,8 +13,6 @@ from datetime import timedelta
 from itertools import chain
 import matplotlib.pyplot as plt
 
-# Settings
-from configs.Settings_data import *
 
 def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021):
     # List all the images
@@ -80,7 +78,7 @@ def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021):
     for fp_img in fp_imgs:
         data = imageio.imread(fp_img)
         data = data[:1000, 400:, :]
-        plt.imshow(data)
+        #plt.imshow(data)
         mean_pix.append(int(np.mean(data)))
 
     final_df['Lum_pix'] = mean_pix
@@ -102,4 +100,3 @@ def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021):
     final_df.to_csv(csv_path, index=False)
     print('Done')
 
-make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021)
