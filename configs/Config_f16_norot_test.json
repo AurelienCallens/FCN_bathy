@@ -6,7 +6,7 @@
     },
     "Data_aug": {
         "BRIGHT_R": "[0.9, 1.1]",
-        "SHIFT_R": 0.1,
+        "SHIFT_R": 0.2,
         "ROT_R": 0,
         "V_FLIP": true,
         "H_FLIP": true
@@ -15,15 +15,15 @@
         "ACTIV": "relu",
         "K_INIT": "he_normal",
         "PRETRAINED_W": false,
-        "FILTERS": 4,
-        "FILTERS_G": 4,
+        "FILTERS": 16,
+        "FILTERS_G": 16,
         "FILTERS_D": 8,
         "NOISE_STD": 0.05,
         "DROP_RATE": 0.2
     },
     "Train": {
         "BATCH_SIZE": 6,
-        "EPOCHS": 5,
+        "EPOCHS": 100,
         "LR": 0.002,
         "LR_P2P": 0.0002,
         "OPTI": "Adam"

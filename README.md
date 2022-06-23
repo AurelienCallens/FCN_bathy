@@ -3,49 +3,54 @@
 
 ## Description
 
-This repository contains python tools to perform bathymetric inversion based on deep learning algorithms. 
-The deep learning algorithms (Unet and Pix2Pix) are implemented in tensorflow. 
+This repository contains python tools to perform bathymetric inversion based on deep learning algorithms. The deep learning algorithms (Unet and Pix2Pix) are implemented in tensorflow. 
 During training, you have the choice to train on CPU or GPU if you have one.
 
 ## Getting Started
 
 ### Dependencies
 
-* Describe any prerequisites, libraries, OS version, etc., needed before installing program.
-* ex. Windows 10
+* This project was built with **python 3.8.13**
+* All the required dependencies are listed in the requirements.txt file.
 
 ### Installing
 
-* How/where to download your program
-* Any modifications needed to be made to files/folders
+1. Download or clone this repository at the location of your choice
+
+2. Create a virtual environment with **python 3.8.13**:
+
+    + virtualenv
+    
+    ```
+    code blocks for commands
+    ```
+
+    + conda 
+
+    ```
+    code blocks for commands
+    ```
+
+3. Activate your virtual environment and download the required dependencies:
+
+    + virtualenv
+    
+    ```
+    code blocks for commands
+    ```
+
+    + conda 
+
+    ```
+    code blocks for commands
+    ```
 
 ### Executing program
 
-* How to run the program
-* Step-by-step bullets
-
-```
-code blocks for commands
-```
-
-## Help
-
-Any advise for common problems or issues.
-```
-command to run if program contains helper info
-```
 
 ## Authors
 
 Aurelien Callens
-
-## Version History
-
-* 0.2
-    * Various bug fixes and optimizations
-    * See [commit change]() or See [release history]()
-* 0.1
-    * Initial Release
 
 ## License
 

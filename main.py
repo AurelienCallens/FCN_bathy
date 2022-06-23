@@ -25,7 +25,7 @@ class Bathy_inv_network:
     def __init__(self, params_file):
         self.params = Param(params_file).load()
         self.params_file = params_file
-        start_tf_session('cpu')
+        start_tf_session('gpu')
 
     def generate_data_csv(self):
 

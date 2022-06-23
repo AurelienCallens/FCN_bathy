@@ -1,5 +1,5 @@
 # Python extensions
-___pycache__/
+**/__pycache__
 .spyproject
 .ipynb_checkpoints
 
@@ -8,4 +8,4 @@ ___pycache__/
 
 # Data repository
 env/*
-*/___pycache__/*
+

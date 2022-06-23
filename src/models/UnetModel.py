@@ -148,7 +148,8 @@ class UNet():
             train_generator,
             epochs=self.EPOCHS,
             validation_data=val_generator,
-            callbacks=self.callback())
+            callbacks=self.callback(),
+            verbose=2)
         tf.keras.backend.clear_session()
         self.model = model
         return([model, history])

@@ -261,4 +261,5 @@ class Pix2Pix():
         ax3.title.set_text('Env. Cond.')
         ax4.title.set_text('True bathy')
         ax5.title.set_text('Pred. bathy')
-        fig.savefig('trained_models/example_ouptut_epoch' + str(epoch) + '.png')
+        #fig.savefig('trained_models/example_ouptut_epoch' + str(epoch) + '.png')
+        fig.savefig('trained_models/example_ouptut_epoch.png')
