@@ -6,6 +6,7 @@ Created on Thu Mar 24 13:43:32 2022
 @author: Aurelien
 """
 import os
+import argparse
 import pandas as pd
 import numpy as np
 import tensorflow as tf
@@ -22,10 +23,13 @@ from src.executor.tf_init import start_tf_session
 
 class Bathy_inv_network:
 
-    def __init__(self, params_file):
+    def __init__(self, params_file, gpu):
         self.params = Param(params_file).load()
         self.params_file = params_file
-        start_tf_session('gpu')
+        if gpu:
+            start_tf_session('gpu')
+        else: 
+            start_tf_session('cpu')
 
     def generate_data_csv(self):
 
@@ -145,9 +149,14 @@ class Bathy_inv_network:
 
 if __name__ == '__main__':
 
-    params_file = 'configs/Config_f16_norot_test.json'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('gpu', help="Use GPU?", type=bool)
+    parser.add_argument('config', help="Name of config file (must be placed in ./configs/")
+    args = parser.parse_args()
 
-    Bathy_inv = Bathy_inv_network(params_file)
+    params_file = 'configs/' + args.config
+
+    Bathy_inv = Bathy_inv_network(params_file, args.gpu)
     Bathy_inv.train_unet(check_gen=False)
     Bathy_inv.train_Pix2pix()
     print("Entrainement fini!")
