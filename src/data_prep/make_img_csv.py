@@ -10,8 +10,6 @@ import imageio
 import numpy as np
 import pandas as pd
 from datetime import timedelta
-from itertools import chain
-import matplotlib.pyplot as plt
 
 
 def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021):
@@ -95,8 +93,8 @@ def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021):
         else:
             date_verif.append(False)
 
-    final_df = final_df[final_df.Date.apply(lambda x: x in date_unique[date_verif])]
-
+    final_df = final_df[final_df.Date.apply(lambda x: x in pd.to_datetime(date_unique[date_verif]))]
+    print(final_df.shape)
     final_df.to_csv(csv_path, index=False)
     print('Done')
 

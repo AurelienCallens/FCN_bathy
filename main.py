@@ -12,12 +12,9 @@ import numpy as np
 import tensorflow as tf
 from datetime import datetime
 
-from configs.Param import Param
-from configs.Settings_data import *
+from src.Param import Param
 from src.models.UnetModel import UNet
 from src.models.Pix2Pix import Pix2Pix
-from src.data_prep.make_cnn_dataset import generate_data_folders_cnn
-from src.data_prep.make_img_csv import make_img_csv
 from src.evaluation.metric_functions import *
 from src.executor.tf_init import start_tf_session
 
@@ -30,15 +27,6 @@ class Bathy_inv_network:
             start_tf_session('gpu')
         else: 
             start_tf_session('cpu')
-
-    def generate_data_csv(self):
-
-        make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021)
-
-    def generate_cnn_dataset(self):
-
-        generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, bathy_range,
-                          output_size, tide_min, tide_max, test_bathy)
 
     def train_unet(self, check_gen=True):
 

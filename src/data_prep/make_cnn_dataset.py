@@ -7,11 +7,11 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 from rasterio.crs import CRS
+from itertools import chain
 from shapely.geometry import Point
 from scipy.interpolate import griddata
 from sklearn.preprocessing import MinMaxScaler
 
-from configs.Settings_data import *
 from src.data_prep.img_processing import img_rotation, proj_rot, crop_img, ffill
 
 def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, bathy_range, output_size, tide_min, tide_max, test_bathy):
