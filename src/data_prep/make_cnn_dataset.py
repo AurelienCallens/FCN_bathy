@@ -7,32 +7,24 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 from rasterio.crs import CRS
-from itertools import chain
 from shapely.geometry import Point
 from scipy.interpolate import griddata
 from sklearn.preprocessing import MinMaxScaler
 
 from src.data_prep.img_processing import img_rotation, proj_rot, crop_img, ffill
 
-def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, bathy_range, output_size, tide_min, tide_max, test_bathy):
+def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size, tide_min, tide_max, test_bathy):
     # Import df
     # Img dataframe
-
+    print('Importing meta csv')
     final_df = pd.read_csv(df_fp_img)
     if type(tide_min) == float:
         final_df = final_df[final_df['Z_m'] > tide_min].reset_index(drop=True)
-    if type(tide_min) == float:
+    if type(tide_max) == float:
         final_df = final_df[final_df['Z_m'] < tide_max].reset_index(drop=True)
 
     final_df.sort_values('Date', ignore_index=True, inplace=True)
-    final_df['Date'] = pd.to_datetime(final_df['Date'], format="%Y-%m-%d %H:%M:%S")
-    # Keep days depending on date range provided
 
-    date_vec = list(map(lambda x: pd.date_range(start=pd.to_datetime(x[0]),
-              end=pd.to_datetime(x[1]), freq='D'), bathy_range))
-    date_vec = list(chain(*date_vec))
-    days_to_keep = pd.to_datetime(date_vec)
-    final_df = final_df[final_df.Date.apply(lambda x: x.strftime('%Y-%m-%d') in days_to_keep)]
     final_df['Date'] = final_df['Date'].astype(str)
 
     if type(test_bathy) is not str:
@@ -74,7 +66,7 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, bathy_range, output
 
     # Bathy dataframe
     bat_df = pd.read_csv(df_fp_bat)
-
+    print('Creating folders')
     # Create folders
     splits = ['Train', 'Validation', 'Test']
     target_paths = [fp_name + i + '/Target/' for i in splits]

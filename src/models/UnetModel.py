@@ -150,7 +150,6 @@ class UNet():
             validation_data=val_generator,
             callbacks=self.callback(),
             verbose=2)
-        tf.keras.backend.clear_session()
         self.model = model
         return([model, history])
 
@@ -181,3 +180,4 @@ class UNet():
 
         print("Plotting %d images from train generator ....\n"%(n_img))
         plot_output_generator(train_gen, n_img=n_img)
+

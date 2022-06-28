@@ -3,6 +3,7 @@
 """Custom generator"""
 
 import numpy as np
+from tensorflow.image import resize
 from tensorflow import keras
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
@@ -60,6 +61,10 @@ class CustomGenerator(keras.utils.Sequence):
         for j in range(len(batch_input_img_paths)):
             X_img = np.load(batch_input_img_paths[j])
             Y_img = np.load(batch_target_img_paths[j])
+
+            if(not self.IMG_SIZE[0] == 512):
+                X_img = np.array(resize(X_img, self.IMG_SIZE), dtype=np.float16)
+                Y_img = np.array(resize(np.expand_dims(Y_img, axis=2), self.IMG_SIZE), dtype=np.float16).squeeze()
 
             if self.split == 'Train':
                 cond = np.copy(X_img[:, :, 2])

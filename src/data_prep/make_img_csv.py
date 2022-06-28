@@ -10,9 +10,9 @@ import imageio
 import numpy as np
 import pandas as pd
 from datetime import timedelta
+from itertools import chain
 
-
-def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021):
+def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021, bathy_range):
     # List all the images
     list_img = glob.glob(Img_folder_path + 'biarritz_3_2_1_*.png')
     res_df = pd.DataFrame({'Fp_img': list_img})
@@ -95,6 +95,17 @@ def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021):
 
     final_df = final_df[final_df.Date.apply(lambda x: x in pd.to_datetime(date_unique[date_verif]))]
     print(final_df.shape)
+
+    #final_df['Date'] = pd.to_datetime(final_df['Date'], format="%Y-%m-%d %H:%M:%S")
+
+    # Keep days depending on date range provided
+    date_vec = list(map(lambda x: pd.date_range(start=pd.to_datetime(x[0]),
+              end=pd.to_datetime(x[1]), freq='D'), bathy_range))
+    date_vec = list(chain(*date_vec))
+    days_to_keep = pd.to_datetime(date_vec)
+    final_df = final_df[final_df.Date.apply(lambda x: x.strftime('%Y-%m-%d') in days_to_keep)]
+    print(final_df.shape)
+    
     final_df.to_csv(csv_path, index=False)
     print('Done')
 

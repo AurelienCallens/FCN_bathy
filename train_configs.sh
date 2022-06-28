@@ -1,8 +1,8 @@
 #!/bin/bash
 
-source tf_gpu/bin/activate;
+source $1/bin/activate;
 
 for filename in ./configs/*.json; 
-	do python3 test_bash.py $(basename "$filename") ;
+	do python3 main.py 0 $(basename "$filename");
 done
     

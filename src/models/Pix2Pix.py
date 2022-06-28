@@ -81,7 +81,6 @@ class Pix2Pix():
 
         # Build the generator
         self.generator = self.build_generator()
-
         # Input images and their conditioning images
         img_A = Input(shape=(self.IMG_ROWS, self.IMG_ROWS, 1), name='target_image')
         img_B = Input(shape=(self.IMG_ROWS, self.IMG_ROWS, self.BANDS), name='input_image')
@@ -130,7 +129,7 @@ class Pix2Pix():
             return u
 
         # Image input
-        d0 = Input(shape=(512, 512, 3))
+        d0 = Input(shape=(self.IMG_ROWS, self.IMG_ROWS, self.BANDS))
 
         # Downsampling
         d1 = conv2d(d0, self.gf, bn=False)
@@ -166,8 +165,8 @@ class Pix2Pix():
                 d = BatchNormalization(momentum=0.8)(d)
             return d
 
-        img_A = Input(shape=[512, 512, 1], name='target_image')
-        img_B = Input(shape=[512, 512, 3], name='input_image')
+        img_A = Input(shape=[self.IMG_ROWS, self.IMG_ROWS, 1], name='target_image')
+        img_B = Input(shape=[self.IMG_ROWS, self.IMG_ROWS, self.BANDS], name='input_image')
 
         # Concatenate image and conditioning image by channels to produce input
         combined_imgs = concatenate([img_A, img_B])
@@ -261,5 +260,6 @@ class Pix2Pix():
         ax3.title.set_text('Env. Cond.')
         ax4.title.set_text('True bathy')
         ax5.title.set_text('Pred. bathy')
+        fig.suptitle('Results after epoch ' + str(epoch+1))
         #fig.savefig('trained_models/example_ouptut_epoch' + str(epoch) + '.png')
         fig.savefig('trained_models/example_ouptut_epoch.png')
