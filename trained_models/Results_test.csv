@@ -1,6 +1,0 @@
-Name,Data,Param_file,Input_size,Brightness_r,Shift_r,Rotation_r,V_flip,H_flip,Filters_G,Filters_D,Acti,Dropout,Opti,Lr,Factor_decay,Epoch decay,Early stop,Epoch_tr,Rmse,Mae,Ssim,Ms_ssim,Pred_min,Pred_max
-trained_models/Unet_Data_f32_b12_ep153_29-06-2022_09:13,Data,Config_f16_data_256.json,"(256, 256)","[0.9, 1.1]",0.2,0,True,True,32,,relu,0.2,Adam,0.002,0.8,20,20,153,0.6069,0.4865,0.6971,0.8302,-4.1566,2.6067
-trained_models/Pix2pix_Data_f32_b12_ep100_29-06-2022_09:34,Data,Config_f16_data_256.json,"(256, 256)","[0.9, 1.1]",0.2,0,True,True,32,8,relu,0.2,Adam,0.0002,,,,100,0.6526,0.5422,0.7268,0.8577,-4.2405,2.5005
-trained_models/Unet_Data_extended_f32_b12_ep92_29-06-2022_10:13,Data_extended,Config_f16_data_extended_256.json,"(256, 256)","[0.9, 1.1]",0.2,0,True,True,32,,relu,0.2,Adam,0.002,0.8,20,20,92,1.2866,1.0534,0.4939,0.6807,-4.2986,2.2157
-trained_models/Pix2pix_Data_extended_f32_b12_ep100_29-06-2022_10:43,Data_extended,Config_f16_data_extended_256.json,"(256, 256)","[0.9, 1.1]",0.2,0,True,True,32,8,relu,0.2,Adam,0.0002,,,,100,0.8818,0.7354,0.7047,0.7724,-4.2216,2.7868
-trained_models/Unet_Data_extended_f16_b6_ep100_29-06-2022_11:29,Data_extended,Config_f16_data_extended.json,"(512, 512)","[0.9, 1.1]",0.2,0,True,True,16,,relu,0.2,Adam,0.002,0.8,20,20,100,0.608,0.488,0.7103,0.8349,-4.239,2.4688

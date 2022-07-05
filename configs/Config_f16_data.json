@@ -15,8 +15,8 @@
         "ACTIV": "relu",
         "K_INIT": "he_normal",
         "PRETRAINED_W": false,
-        "FILTERS": 16,
-        "FILTERS_G": 16,
+        "FILTERS": 32,
+        "FILTERS_G": 32,
         "FILTERS_D": 8,
         "NOISE_STD": 0.05,
         "DROP_RATE": 0.2
