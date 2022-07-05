@@ -10,21 +10,20 @@ import os
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from tensorflow.keras.optimizers import Adam
 from numpy.random import seed
-from model.UnetModel import UNet
+from src.models.UnetModel import UNet
 import matplotlib.gridspec as gridspec
 from scipy.ndimage import gaussian_filter
 
-from configs.Settings import *
-from src.evaluation.verif_functions import *
-from src.evaluation.metric_functions import *
+from src.Param import Param
 from src.executor.tf_init import start_tf_session
-
-
+from src.utils import initialize_file_path
+from src.evaluation.metric_functions import * 
 
 # 0) Initialize session
 #mode = 'cpu'
-mode = 'gpu'
+mode = 'cpu'
 start_tf_session(mode)
 
 # keras seed fixing
@@ -32,18 +31,25 @@ seed(42)
 # tensorflow seed fixing
 tf.random.set_seed(42)
 
+case = 1
+res_csv = pd.read_csv('trained_models/Results_test.csv')
 
+params = Param('./configs/' + res_csv['Param_file'][case]).load()
+
+train_input, train_target = initialize_file_path(params['Input']['DIR_NAME'], 'Train')
+val_input, val_target = initialize_file_path(params['Input']['DIR_NAME'], 'Validation')
+test_input, test_target = initialize_file_path(params['Input']['DIR_NAME'], 'Test')
 
 # 1) Load a model
-Unet_model = UNet(size=IMG_SIZE, bands=N_CHANNELS)
+Unet_model = UNet(params)
 
-Trained_model = tf.keras.models.load_model('trained_models/cGAN_ext',
+Trained_model = tf.keras.models.load_model(res_csv['Name'][case],
                                            custom_objects={'absolute_error':absolute_error,
                                                            'pred_min':pred_min,
                                                            'pred_max':pred_max},
                                            compile=False)
 
-Trained_model.compile(optimizer=OPTIMIZERS, loss='mse', metrics=[root_mean_squared_error,absolute_error, psnr, ssim, ms_ssim])
+Trained_model.compile(optimizer=Adam(params['Train']['LR'], 0.5), loss='mse', metrics=[root_mean_squared_error,absolute_error, psnr, ssim, ms_ssim])
 
 test_gen = Unet_model.data_generator('Test')
 Trained_model.evaluate(test_gen)
@@ -78,7 +84,7 @@ def averaged_pred(test_gen, Trained_model, rep):
         err_pred.append(np.abs(true_0.squeeze() - pred_0.mean(axis=2)))
     return [avg_pred, std_pred, err_pred]
 
-avg_pred, std_pred, err_pred = averaged_pred(test_gen, Trained_model, 10)
+avg_pred, std_pred, err_pred = averaged_pred(test_gen, Trained_model, 20)
 
 
 item = 20
@@ -226,11 +232,11 @@ acc_array['input'] = X
 acc_array['pred'] = list(map(lambda x: np.round(x,2), avg_pred))
 acc_array['m_snap'] = mean_snap
 
-acc_array['Date'] = list(map(lambda x: os.path.basename(x)[:-4], test_input_img_paths))
+acc_array['Date'] = list(map(lambda x: os.path.basename(x)[:-4], test_input))
 #acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H_%M_%S")
-acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H_%M_%S")
+acc_array['Date'] = pd.to_datetime(acc_array['Date'], format="%Y-%m-%d %H:%M:%S")
 
-tide_wave_cond = pd.read_csv('data_CNN/Data_processed/meta_df.csv')[['Date', 'bathy', 'Tide', 'Hs_m', 'Tp_m', 'Dir_m']]
+tide_wave_cond = pd.read_csv('data_CNN/Data_processed/Meta_df.csv')[['Date', 'bathy', 'Tide', 'Hs_m', 'Tp_m', 'Dir_m']]
 tide_wave_cond['Date']= pd.to_datetime(tide_wave_cond['Date'], format="%Y-%m-%d %H:%M:%S")
 
 acc_array = pd.merge(acc_array, tide_wave_cond, on='Date', how='inner').drop_duplicates('rmse', ignore_index=True)
@@ -238,6 +244,8 @@ acc_array = pd.merge(acc_array, tide_wave_cond, on='Date', how='inner').drop_dup
 
 
 plt.scatter(acc_array['rmse'], acc_array['m_snap'])
+plt.xlabel('RMSE')
+plt.ylabel('Pixel intensity')
 
 acc_array.mean()
 

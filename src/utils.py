@@ -7,6 +7,7 @@ Created on Wed Apr 27 09:00:39 2022
 """
 import os
 
+
 def sorted_list_path(dirname, file_ext=".npy"):
    res_list = sorted(
        [
@@ -16,6 +17,7 @@ def sorted_list_path(dirname, file_ext=".npy"):
        ]
    )
    return(res_list)
+
 
 def initialize_file_path(dir_name, split):
 

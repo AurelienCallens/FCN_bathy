@@ -13,7 +13,8 @@ from sklearn.preprocessing import MinMaxScaler
 
 from src.data_prep.img_processing import img_rotation, proj_rot, crop_img, ffill
 
-def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size, tide_min, tide_max, test_bathy):
+def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
+                              tide_min, tide_max, test_bathy):
     # Import df
     # Img dataframe
     print('Importing meta csv')
