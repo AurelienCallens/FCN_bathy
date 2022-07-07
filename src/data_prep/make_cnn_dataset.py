@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Create the dataset for the FCN (train/test)"""
+"""Prepare the data for training tensorflow models.
+
+Usage:
+    from src.data_prep.make_cnn_dataset import generate_data_folders_cnn
+
+Author:
+    Aurélien Callens - 05/05/2022
+"""
 
 import os
 import numpy as np
@@ -13,8 +20,53 @@ from sklearn.preprocessing import MinMaxScaler
 
 from src.data_prep.img_processing import img_rotation, proj_rot, crop_img, ffill
 
+
 def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
                               tide_min, tide_max, test_bathy):
+    """Prepare the images and generate associated folders to train a tensorflow
+    model
+
+    This function prepares the images and the bathymetric data to be used by a
+    tensorflow model. X's are arrays with 3 channels: mean RGB of snap, mean
+    RGB of timex and matrix with normalized environmental conditions. Y's are
+    array with 1 channel containing the bathymetric map to predict.
+    The main steps of the function are:
+        1- Read csv file with image characteristics and filepaths + csv file
+        with bathymetric map
+        2- Filter if necessary, split the data into train/val/test and
+        normalize environmental conditions
+        3- Create the directories to save all the X and Y. The structure of
+        the directories is adapted for the use keras generator.
+        4- Iterate through all the date to prepare the dataset
+            a- Prepare X tensor
+            b- Prepare Y tensor
+            c- Save X and Y as numpy file in the appropriate directories
+
+    Parameters
+    ----------
+    fp_name : str
+        Name of the output directory
+    df_fp_img : str
+        Filepath of the repository containing the orthorectified images
+    df_fp_bat : str
+        Filepath of the csvfile with bathymetric data
+    output_size : tuple
+        Output size in pixels
+    tide_min : float
+        Minimum tide level in meters to filter images by tide
+    tide_max : float
+        Maximum tide level in meters to filter images by tide
+    test_bathy : str
+        How to make the test set. If None: split the data 80% train/20% test
+        for all the bathy surveys. If "2018-01-31": keeps "2018-01-31" survey
+        as test data
+
+    Output
+    ------
+    A single directory at the specified location. This directory is populated
+    with subdirectories (train/val/test) containing X and Y data ready for the
+    training of a tensorflow model.
+    """
     # Import df
     # Img dataframe
     print('Importing meta csv')
@@ -61,8 +113,7 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
     final_df['Dir_c'] = scaler.fit_transform(final_df[['Dir_m']])
     final_df['Tide_c'] = scaler.fit_transform(final_df[['Tide']])
 
-
-    # Extract unique date
+    # Extract unique date + hour
     date_unique = final_df['Date'].sort_values().unique()
 
     # Bathy dataframe
@@ -71,31 +122,36 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
     # Create folders
     splits = ['Train', 'Validation', 'Test']
     target_paths = [fp_name + i + '/Target/' for i in splits]
-    input_paths =  [fp_name + i + '/Input/' for i in splits] 
+    input_paths = [fp_name + i + '/Input/' for i in splits]
     newpaths = target_paths + input_paths
     list(map(lambda x: os.makedirs(x, exist_ok=True), newpaths))
 
-    # Loop through every date
+    # Loop through every date + hour
 
     for date in date_unique:
         temp_df = final_df[final_df['Date'] == date].reset_index()
 
-        # X tensor (3, img_size, img_size) with mean RGB snap, tmx and env. cond
-        ## Prepare snap and timex
+        # X tensor (3, img_size, img_size) with mean RGB snap, timex
+        # and env. cond
+        # Prepare snap and timex
         fp_snp = list(temp_df.loc[(temp_df['Type_img'] == 'snap'), 'Fp_img'])
         fp_tmx = list(temp_df.loc[(temp_df['Type_img'] == 'timex'), 'Fp_img'])
 
         data_snp, trans_snp = img_rotation(fp_snp[0])
         data_tmx, trans_tmx = img_rotation(fp_tmx[0])
 
-        # show(np.mean(data_snp, axis=0), transform=transform_snp, cmap='Greys_r')
-        # show(np.mean(data_tmx, axis=0), transform=transform_tmx, cmap='Greys_r')
+        # show(np.mean(data_snp, axis=0), transform=transform_snp,
+        # cmap='Greys_r')
+        # show(np.mean(data_tmx, axis=0), transform=transform_tmx,
+        # cmap='Greys_r')
+
+        # Extract window
         win_size = output_size/2
         win_coord = eval(temp_df.loc[0, 'X_Y'])
         snp_mat = crop_img(data_snp, trans_snp, win_coord, win_size)
         tmx_mat = crop_img(data_tmx, trans_tmx, win_coord, win_size)
 
-        ## Prepare env cond matrix
+        # Prepare env cond matrix
         env_mat = np.zeros(snp_mat.shape)
         mid = int(snp_mat.shape[0]/2)
         env_mat[0:mid, 0:mid] = temp_df.loc[0, 'Hs_c']
@@ -103,7 +159,7 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
         env_mat[mid:, 0:mid] = temp_df.loc[0, 'Dir_c']
         env_mat[mid:, mid:] = temp_df.loc[0, 'Tide_c']
 
-        ## Prepare bathymetric data
+        # Prepare bathymetric data on the same window as X tensor
         bathy_survey = temp_df.loc[0, 'bathy']
         bat = bat_df[['x', 'y', bathy_survey]]
         dst_crs = CRS.from_proj4(proj_rot)
@@ -118,7 +174,9 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
                           (x_mesh, y_mesh), method='linear')
         z_mesh = np.flipud(z_mesh)
 
-        if(np.isnan(z_mesh).any() == True):
+        # Solving the problem of missing value for the bathymetric survey of
+        # 06/2021:
+        if(np.isnan(z_mesh).any()):
             z_mesh = ffill(z_mesh)
             print('Filling values ...')
 
@@ -129,18 +187,3 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
 
         name_tar = fp_name + temp_df.loc[0, 'Split'] + '/Target/' + date + '.npy'
         np.save(name_tar, z_mesh.astype(np.float16))
-
-        """
-        np.save('out.npy', mat_3d.astype(np.float16))
-        img_test = np.load('out.npy')
-        plt.imshow(img_test)
-        plt.subplot(2, 2, 1)
-        plt.imshow(snp_mat, cmap='gray')
-        plt.subplot(2, 2, 2)
-        plt.imshow(tmx_mat, cmap='gray')
-        plt.subplot(2, 2, 3)
-        plt.imshow(env_mat)
-        plt.subplot(2, 2, 4)
-        plt.imshow(z_mesh)
-        plt.show()
-        """

@@ -26,7 +26,7 @@ wind_pos_062021 = '(80, 100)'
 # Filepath of the csvfile with bathymetric data:
 df_fp_bat = "./data_CNN/Data_processed/Processed_bathy.csv"
 
-#Output size:
+#Output size in pixels
 output_size = 512
 
 
