@@ -1,0 +1,37 @@
+{
+    "Input": {
+        "DIR_NAME": "Data",
+        "IMG_SIZE": "(512, 512)",
+        "N_CHANNELS": 3
+    },
+    "Data_aug": {
+        "BRIGHT_R": "[0.9, 1.1]",
+        "SHIFT_R": 0.2,
+        "ROT_R": 0,
+        "V_FLIP": true,
+        "H_FLIP": true
+    },
+    "Net_str": {
+        "ACTIV": "relu",
+        "K_INIT": "he_normal",
+        "PRETRAINED_W": false,
+        "FILTERS": 32,
+        "FILTERS_G": 32,
+        "FILTERS_D": 8,
+        "NOISE_STD": 0.05,
+        "DROP_RATE": 0.2
+    },
+    "Train": {
+        "BATCH_SIZE": 16,
+        "EPOCHS": 200,
+        "LR": 0.002,
+        "LR_P2P": 0.0002,
+        "OPTI": "Adam"
+    },
+    "Callbacks": {
+        "DECAY_LR": true,
+        "FACTOR_DECAY": 0.8,
+        "N_EPOCHS_DECAY": 20,
+        "PATIENCE": 20
+    }
+}
