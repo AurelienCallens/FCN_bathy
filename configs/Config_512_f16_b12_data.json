@@ -1,6 +1,6 @@
 {
     "Input": {
-        "DIR_NAME": "Data_extended",
+        "DIR_NAME": "Data",
         "IMG_SIZE": "(512, 512)",
         "N_CHANNELS": 3
     },
@@ -15,14 +15,14 @@
         "ACTIV": "relu",
         "K_INIT": "he_normal",
         "PRETRAINED_W": false,
-        "FILTERS": 64,
+        "FILTERS": 16,
         "FILTERS_G": 32,
         "FILTERS_D": 8,
         "NOISE_STD": 0.05,
         "DROP_RATE": 0.2
     },
     "Train": {
-        "BATCH_SIZE": 6,
+        "BATCH_SIZE": 12,
         "EPOCHS": 200,
         "LR": 0.002,
         "LR_P2P": 0.0002,

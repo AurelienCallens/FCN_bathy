@@ -1,6 +1,6 @@
 {
     "Input": {
-        "DIR_NAME": "Data",
+        "DIR_NAME": "Data_extended",
         "IMG_SIZE": "(512, 512)",
         "N_CHANNELS": 3
     },
@@ -15,7 +15,7 @@
         "ACTIV": "relu",
         "K_INIT": "he_normal",
         "PRETRAINED_W": false,
-        "FILTERS": 64,
+        "FILTERS": 32,
         "FILTERS_G": 32,
         "FILTERS_D": 8,
         "NOISE_STD": 0.05,

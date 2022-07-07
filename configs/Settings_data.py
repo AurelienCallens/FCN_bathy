@@ -35,7 +35,7 @@ tide_min = 0.9
 tide_max = None
 
 
-# Keeping only the days before and after the bathymetric surveys: 
+# Keeping only the days before and after the bathymetric surveys:
 
 """
 # Extended range
