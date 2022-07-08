@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Pix2pix model mostly taken from : https://github.com/eriklindernoren/Keras-GAN/blob/master/pix2pix/pix2pix.py
+"""Class for Pix2pix model
+
+Usage:
+    from src.models.Pix2Pix import Pix2Pix
+
+Author:
+    Aurelien Callens - 14/04/2022
+    Pix2pix class greatly inspired from:
+        https://github.com/eriklindernoren/Keras-GAN/blob/master/pix2pix/pix2pix.py
 """
 
 import datetime
@@ -15,7 +22,7 @@ from tensorflow.keras.layers import LeakyReLU, UpSampling2D, Conv2D
 from tensorflow.keras.layers import Input, Dropout, concatenate
 from tensorflow.keras.layers import BatchNormalization, Activation, GaussianNoise
 
-# Local import 
+# Local import
 from src.utils import initialize_file_path
 from src.evaluation.metric_functions import *
 from src.dataloader.CustomGenerator import CustomGenerator
@@ -23,10 +30,35 @@ from src.dataloader.seq_iterator_gan import ParallelIterator
 
 
 class Pix2Pix():
+    """
+    Class for building and training Pix2pix network given certain parameters.
+
+    ...
+
+    Attributes
+    ----------
+    params : dict
+        Parameters dictionnary imported with the Param() class. It contains
+        all the hyperparameters needed to build and train the network.
+
+    Methods
+    -------
+    build_generator()
+        Build the generator model
+    build_discriminator()
+        Build the discriminator model
+    train()
+        Train the combined model by iterating through generator and
+        discriminator training
+    sample_images()
+        Plot a sample image from the generator every # epochs. It allows to
+        judge visually the quality of the images predicted by the generator.
+    """
+
     def __init__(self, params):
 
         # Parameters
-        ## Input
+        # Inputs
         self.train_input, self.train_target = initialize_file_path(params['Input']['DIR_NAME'], 'Train')
         self.val_input, self.val_target = initialize_file_path(params['Input']['DIR_NAME'], 'Validation')
         self.test_input, self.test_target = initialize_file_path(params['Input']['DIR_NAME'], 'Test')
@@ -36,7 +68,7 @@ class Pix2Pix():
         self.BANDS = params['Input']['N_CHANNELS']
         self.IMG_SHAPE = (self.IMG_ROWS, self.IMG_COLS, self.BANDS)
 
-        ## Network architectures
+        # Network architectures
         self.gf = params['Net_str']['FILTERS_G']
         self.df = params['Net_str']['FILTERS_D']
         self.ACTIV = params['Net_str']['ACTIV']
@@ -45,7 +77,7 @@ class Pix2Pix():
         self.NOISE_STD = params['Net_str']['NOISE_STD']
         self.DROP_RATE = params['Net_str']['DROP_RATE']
 
-        ## Training
+        # Training
         self.EPOCHS = params['Train']['EPOCHS']
         self.BATCH_SIZE = params['Train']['BATCH_SIZE']
         self.LR = params['Train']['LR_P2P']
@@ -101,7 +133,7 @@ class Pix2Pix():
                               optimizer=optimizer)
 
     def build_generator(self):
-        """U-Net Generator"""
+        """Build U-Net Generator"""
 
         conv_args = {"kernel_size": 4,
                      "activation": self.ACTIV,
@@ -155,6 +187,7 @@ class Pix2Pix():
         return Model(d0, output_img)
 
     def build_discriminator(self):
+        """Build PatchGAN discriminator """
 
         def d_layer(layer_input, filters, f_size=4, bn=True):
             """Discriminator layer"""
@@ -181,7 +214,15 @@ class Pix2Pix():
         return Model([img_A, img_B], validity)
 
     def train(self, sample_interval=5, img_index=1):
+        """Train the pix2pix model
 
+        Parameters
+        ----------
+        sample_interval: int
+            Epoch interval at which a sample image is plotted
+        img_index: int
+            Index of the sample to be plotted at each interval
+        """
         start_time = datetime.datetime.now()
 
         # Adversarial loss ground truths
@@ -230,6 +271,15 @@ class Pix2Pix():
                 self.sample_images(epoch, img_ind=img_index)
 
     def sample_images(self, epoch, img_ind):
+        """Function to plot the predicted image from the generator
+
+        Parameters
+        ----------
+        epoch: int
+            Epoch number of the prediction
+        img_ind: int
+            Index of the sample to be plotted
+        """
 
         imgs_B, imgs_A = self.test_gen.__getitem__(img_ind)
         fake_A = self.generator.predict(imgs_B)

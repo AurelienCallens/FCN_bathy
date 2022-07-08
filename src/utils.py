@@ -1,16 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Apr 27 09:00:39 2022
+"""Utils function to initialize all the image path before training the networks
 
-@author: aurelien
+Usage:
+    from src.utils import initialize_file_path
+
+Author:
+    Aurelien Callens - 27/04/2022
 """
 import os
 
-
 def sorted_list_path(dirname, file_ext=".npy"):
+    """Create a sorted list of all the files in the indicated repository.
+
+    Parameters
+    ----------
+    dirname : str
+        Filepath of the repository containing the data.
+    file_ext : str, optional
+        Extension of the files we want to list. The default is ".npy".
+
+    """
    res_list = sorted(
-       [
+      [
            os.path.join(dirname, fname)
            for fname in os.listdir(dirname)
            if fname.endswith(file_ext)
@@ -20,7 +32,20 @@ def sorted_list_path(dirname, file_ext=".npy"):
 
 
 def initialize_file_path(dir_name, split):
+    """
+    Create the list of image depending on the indicated split
 
+    Parameters
+    ----------
+    dir_name : str
+        Filepath of the repository containing the data.
+    split : str
+        Split
+
+    Returns
+    -------
+    List with two elements: X paths and Y paths
+    """
     input_dir = "./data_CNN/" + dir_name + "/" + split + "/Input/"
     target_dir = "./data_CNN/" + dir_name + "/" + split + "/Target/"
 

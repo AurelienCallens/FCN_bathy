@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Mar 24 13:43:32 2022
+"""Verification functions for the network
 
-@author: Aurelien
+Usage:
+
+
+Author:
+    Aurelien Callens - 14/03/2022
 """
 import os
 import argparse
@@ -19,7 +22,7 @@ from src.evaluation.metric_functions import *
 from src.executor.tf_init import start_tf_session
 
 class Bathy_inv_network:
-
+    
     def __init__(self, params_file, gpu):
         self.params = Param(params_file).load()
         self.params_file = params_file

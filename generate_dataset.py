@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Jun 27 14:51:28 2022
+"""Verification functions for the network
 
-@author: aurelien
+Usage:
+
+
+Author:
+    Aurelien Callens - 27/06/2022
 """
 import argparse
 from os.path import exists

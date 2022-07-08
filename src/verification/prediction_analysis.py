@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue May 10 10:58:37 2022
+"""Verification functions for the network
 
-@author: aurelien
+Usage:
+
+
+Author:
+    Aurelien Callens - 05/05/2022
 """
 
 import os

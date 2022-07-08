@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Unet Model"""
+"""Class for Unet model
+
+Usage:
+    from src.models.UnetModel import UNet
+
+Author:
+    Aurelien Callens - 14/04/2022
+    Unet class greatly inspired from:
+        https://github.com/collins-frf/Celerity_Net/blob/master/unet.py
+"""
 
 import tensorflow as tf
 from tensorflow.keras.models import Model
@@ -15,7 +24,33 @@ from src.evaluation.CallbackClasses import TimingCallback, StepDecay
 from src.verification.verif_functions import plot_output_generator, check_nan_generator
 
 class UNet():
-    """Unet Model Class"""
+    """
+    Class for building and training Unet models given certain parameters.
+
+    ...
+
+    Attributes
+    ----------
+    params : dict
+        Parameters dictionnary imported with the Param() class. It contains
+        all the hyperparameters needed to build and train the network.
+
+    Methods
+    -------
+    data_generator()
+        Build the data generators
+    build()
+        Build the Unet model
+    callback()
+        Declare all the callback used during the training of the model
+    train()
+        Train the model
+    predict()
+        Perform prediction on the test set
+    verify_generators()
+        Function to verify the length and presence of NA and plot output of 
+        data generators
+    """
 
     def __init__(self, params):
 

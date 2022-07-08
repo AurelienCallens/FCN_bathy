@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Script to verify the position of the box from which we extract the data in the images"""
+"""Script to verify the position of the box from which we extract the data in the images
+
+Usage:
+
+
+Author:
+    Aurelien Callens - 14/04/2022
+"""
 
 
 import numpy as np

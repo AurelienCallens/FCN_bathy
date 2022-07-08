@@ -1,18 +1,38 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Class for importing hyperparameters from json file to dictionnary
+
+Usage:
+    from src.models.Pix2Pix import Pix2Pix
+
+Author:
+    Aurelien Callens - 22/06/2022
+    Greatly inspired from : https://zerowithdot.com/json-for-ml/
 """
-Created on Wed Jun 22 12:07:49 2022
-@author: aurelien
-"""
+
 import json
+
 
 class Param():
 
     """
-    Auxiliary class for supplying of hyperparameters.
+    Class for building and training Pix2pix network given certain parameters.
+
+
+    Attributes
+    ----------
+    filepath : str
+        Filepath of the json file containing the hyperparameters
+
+    Methods
+    -------
+    load()
+        Load the hyperparameters
+    make_new_json_file()
+        Make initial json file
     """
 
-    def __init__(self, filepath='configs/Config_f16_norot.json'):
+    def __init__(self, filepath):
 
         try:
             p = {}
@@ -31,7 +51,14 @@ class Param():
         return(self.p)
 
     def make_new_json_file(self, filepath):
+        """
+        Make a new json file with specific structure
 
+        Parameters
+        ----------
+        filepath : str
+            where to save the json file containing the hyperparameters
+        """
         hyper = {}
         hyper['Input'] = {'DIR_NAME': 'Data_ext',
                           'IMG_SIZE': '(512, 512)',
@@ -62,6 +89,7 @@ class Param():
 
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(hyper, f, ensure_ascii=False, indent=4)
+
 
 if __name__ == '__main__':
     Param()

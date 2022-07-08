@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Verification functions for the network"""
+"""Verification functions for the network
+
+Usage:
+
+
+Author:
+    Aurelien Callens - 14/04/2022
+"""
 
 import numpy as np
 import matplotlib.pyplot as plt
