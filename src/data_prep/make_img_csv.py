@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Script to make a csv file from a reportory of timex and snap images"""
+"""Function to make a csv file containing filepath and metadata about all the
+snap and timex images inside a specified repository
 
+Usage:
+    from src.data_prep.make_img_csv import make_img_csv
+
+Author:
+    Aurélien Callens - 05/05/2022
+"""
 
 import os
 import re
@@ -12,7 +19,35 @@ import pandas as pd
 from datetime import timedelta
 from itertools import chain
 
-def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021, bathy_range):
+
+def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021,
+                 bathy_range):
+    """Generate a csv file with all the filepaths and metadata about snap and
+    timex images located in a specified repository.
+
+
+    Parameters
+    ----------
+    csv_path : str
+        Name of the output csv file
+    Img_folder_path : str
+        Filepath of the repository containing the orthorectified images
+    wind_pos : str
+        Window position for all the bathymetry except 06/2021
+    wind_pos_062021 : str
+        Window position for 06/2021 bathymetry because truncated bathymetry
+        near the shore
+    bathy_range : list
+        List containing the date range for each bathymetric survey
+
+
+    Output
+    ------
+    A csv file containing filepaths and metadata and of all the snap and
+    timex images corresponding to the bathy range.
+
+    """
+
     # List all the images
     list_img = glob.glob(Img_folder_path + 'biarritz_3_2_1_*.png')
     res_df = pd.DataFrame({'Fp_img': list_img})
@@ -34,8 +69,6 @@ def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021, bathy_ran
     tide_data.rename(columns={'True_tide': 'Tide'}, inplace=True)
 
     new_df = pd.merge(res_df, tide_data, on='Date', how='left')
-    # new_df['diff_tide'] = np.abs(new_df['Z_m'].astype(float) - new_df['Tide'])
-    # new_df['diff_tide'].mean()
     new_df['Date_h'] = new_df['Date'].apply(lambda x: (x + timedelta(hours=1)).strftime("%Y-%m-%d %H"))
 
     # Find wave conditions (joining by date)
@@ -70,20 +103,19 @@ def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021, bathy_ran
 
     final_df.drop_duplicates(subset=['Bn_img'], inplace=True, ignore_index=True)
 
-    # Filtering by luminosity
+    # Removing images with low luminosity
     fp_imgs = list(final_df['Fp_img'])
     mean_pix = []
     for fp_img in fp_imgs:
         data = imageio.imread(fp_img)
         data = data[:1000, 400:, :]
-        #plt.imshow(data)
         mean_pix.append(int(np.mean(data)))
 
     final_df['Lum_pix'] = mean_pix
 
     final_df = final_df.iloc[np.where(final_df.Lum_pix > 100)[0], :]
 
-    # Remove date where we don't have snap+ timex
+    # Remove date where we don't have snap + timex
     date_unique = final_df['Date'].unique()
     date_verif = []
     for date in date_unique:
@@ -105,7 +137,7 @@ def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021, bathy_ran
     days_to_keep = pd.to_datetime(date_vec)
     final_df = final_df[final_df.Date.apply(lambda x: x.strftime('%Y-%m-%d') in days_to_keep)]
     print(final_df.shape)
-    
+
     final_df.to_csv(csv_path, index=False)
     print('Done')
 

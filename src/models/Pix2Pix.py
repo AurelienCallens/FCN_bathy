@@ -10,16 +10,17 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from scipy.ndimage import gaussian_filter
 from tensorflow.keras.optimizers import Adam, SGD
-from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.models import Model
 from tensorflow.keras.layers import LeakyReLU, UpSampling2D, Conv2D
-from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, concatenate
-from tensorflow.keras.layers import BatchNormalization, Activation, ZeroPadding2D, GaussianNoise
+from tensorflow.keras.layers import Input, Dropout, concatenate
+from tensorflow.keras.layers import BatchNormalization, Activation, GaussianNoise
 
-#Local import 
+# Local import 
 from src.utils import initialize_file_path
 from src.evaluation.metric_functions import *
 from src.dataloader.CustomGenerator import CustomGenerator
 from src.dataloader.seq_iterator_gan import ParallelIterator
+
 
 class Pix2Pix():
     def __init__(self, params):
@@ -206,7 +207,7 @@ class Pix2Pix():
             # Train the discriminators (original images = real / generated = Fake)
             d_loss_real = self.discriminator.train_on_batch([imgs_A, imgs_B], valid)
             d_loss_fake = self.discriminator.train_on_batch([fake_A, imgs_B], fake)
-            #d_loss = np.add(d_loss_real, d_loss_fake)/2
+            # d_loss = np.add(d_loss_real, d_loss_fake)/2
 
             # -----------------
             #  Train Generator
@@ -261,5 +262,5 @@ class Pix2Pix():
         ax4.title.set_text('True bathy')
         ax5.title.set_text('Pred. bathy')
         fig.suptitle('Results after epoch ' + str(epoch+1))
-        #fig.savefig('trained_models/example_ouptut_epoch' + str(epoch) + '.png')
+        # fig.savefig('trained_models/example_ouptut_epoch' + str(epoch) + '.png')
         fig.savefig('trained_models/example_ouptut_epoch.png')

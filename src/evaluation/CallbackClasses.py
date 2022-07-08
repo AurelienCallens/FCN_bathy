@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Mar 24 14:41:22 2022
+"""Two classes for customized keras callbacks
 
-@author: aurelien
+Usage:
+    from src.evaluation.CallbackClasses import TimingCallback, StepDecay
+
+Author:
+    https://www.autoscripts.net/how-to-decrease-the-learning-rate-every-10-epochs-by-a-factor-of-0-9/#how-to-decrease-the-learning-rate-every-10-epochs-by-a-factor-of-09
 """
+
 import tensorflow
 import numpy as np
 from timeit import default_timer as timer
+
 
 class StepDecay():
     def __init__(self, initAlpha=0.01, factor=0.1, dropEvery=10):

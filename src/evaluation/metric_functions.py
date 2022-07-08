@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Different metric functions taken from Collins et al. 2021
-(https://github.com/collins-frf/Celerity_Net/blob/master/losses.py)"""
+"""TDifferent metric functions taken from Collins et al. 2021
+
+Usage:
+    from src.evaluation.metric_functions import *
+
+Author:
+    https://github.com/collins-frf/Celerity_Net/blob/master/losses.py
+"""
 
 import tensorflow as tf
 
