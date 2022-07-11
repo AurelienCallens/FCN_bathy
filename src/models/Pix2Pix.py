@@ -13,6 +13,8 @@ Author:
 
 import datetime
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from scipy.ndimage import gaussian_filter
@@ -81,6 +83,7 @@ class Pix2Pix():
         self.EPOCHS = params['Train']['EPOCHS']
         self.BATCH_SIZE = params['Train']['BATCH_SIZE']
         self.LR = params['Train']['LR_P2P']
+        self.PATIENCE = params['Callbacks']['PATIENCE']
         optimizer = Adam(self.LR, 0.5)
         optimizer_disc = SGD(0.0002)
 
@@ -89,9 +92,15 @@ class Pix2Pix():
         self.dataset_name = 'test_res'
         self.train_gen = CustomGenerator(batch_size=self.BATCH_SIZE,
                                          params=params,
-                                         input_img_paths=self.train_input+self.val_input,
-                                         target_img_paths=self.train_target+self.val_target,
+                                         input_img_paths=self.train_input,
+                                         target_img_paths=self.train_target,
                                          split='Train')
+        
+        self.val_gen = CustomGenerator(batch_size=self.BATCH_SIZE,
+                                         params=params,
+                                         input_img_paths=self.val_input,
+                                         target_img_paths=self.val_target,
+                                         split='Validation')
 
         self.test_gen = CustomGenerator(batch_size=1,
                                         params=params,
@@ -228,7 +237,8 @@ class Pix2Pix():
         # Adversarial loss ground truths
         valid = np.ones((self.BATCH_SIZE,) + self.disc_patch)
         fake = np.zeros((self.BATCH_SIZE,) + self.disc_patch)
-
+        rmse = []
+        best_rmse = 999
         for epoch, batchIndex, originalBatchIndex, xAndY in ParallelIterator(
                                        self.train_gen,
                                        self.EPOCHS,
@@ -258,17 +268,40 @@ class Pix2Pix():
             g_loss = self.combined.train_on_batch([imgs_A, imgs_B], [valid, imgs_A])
 
             elapsed_time = datetime.datetime.now() - start_time
-            # Plot the progress
+            
+            # Calculate metrics for early stopping
+            current_model = self.generator
+            current_model.compile(optimizer=Adam(self.LR, 0.5),
+                                  loss='mse', metrics=[root_mean_squared_error, psnr])
+            metrics = np.round(current_model.evaluate(self.val_gen, verbose=0), 4)
+            rmse.append(metrics[1])
+            
+            mean_rmse = np.mean(rmse[-self.PATIENCE:])
+            
+            if ((batchIndex + 1) == self.train_gen.__len__()) and ((epoch + 1) % self.PATIENCE == 0):
+                if (mean_rmse < best_rmse):
+                        best_rmse = mean_rmse
+                        print("New best MA rmse!")
+                else:
+                    print("MA rmse increasing: early stopping!")
+                    break
+                
+                    
+            # Display progress at the end of each epoch
             if ((batchIndex + 1) == self.train_gen.__len__()) and (epoch % sample_interval == 0):
-                print("[Epoch %d/%d] [Batch %d/%d] [D loss real: %f, acc: %3d%%] [D loss fake: %f, acc: %3d%%] [G loss: %f] time: %s" % (epoch+1, self.EPOCHS,
+
+                print("[Epoch %d/%d] [Batch %d/%d] [D loss real: %f] [D loss fake: %f] [G loss: %f] [MA RMSE: %f] time: %s" % (epoch+1, self.EPOCHS,
                                                                                                                                          batchIndex+1, self.train_gen.__len__(),
                                                                                                                                          d_loss_real[
-                                                                                                                                             0], 100*d_loss_real[1],
+                                                                                                                                             0],
                                                                                                                                          d_loss_fake[
-                                                                                                                                             0], 100*d_loss_fake[1],
+                                                                                                                                             0],
                                                                                                                                          g_loss[0],
+                                                                                                                                         best_rmse,
                                                                                                                                          elapsed_time))
+                # Plot the progress                                                                                                                         
                 self.sample_images(epoch, img_ind=img_index)
+            
 
     def sample_images(self, epoch, img_ind):
         """Function to plot the predicted image from the generator
@@ -314,3 +347,4 @@ class Pix2Pix():
         fig.suptitle('Results after epoch ' + str(epoch+1))
         # fig.savefig('trained_models/example_ouptut_epoch' + str(epoch) + '.png')
         fig.savefig('trained_models/example_ouptut_epoch.png')
+        plt.close(fig)

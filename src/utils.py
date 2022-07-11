@@ -12,23 +12,23 @@ import os
 
 def sorted_list_path(dirname, file_ext=".npy"):
     """Create a sorted list of all the files in the indicated repository.
-
+    
     Parameters
     ----------
     dirname : str
-        Filepath of the repository containing the data.
+    Filepath of the repository containing the data.
     file_ext : str, optional
-        Extension of the files we want to list. The default is ".npy".
-
+    Extension of the files we want to list. The default is ".npy".
+    
     """
-   res_list = sorted(
-      [
-           os.path.join(dirname, fname)
-           for fname in os.listdir(dirname)
-           if fname.endswith(file_ext)
-       ]
-   )
-   return(res_list)
+    res_list = sorted(
+       [
+        os.path.join(dirname, fname)
+        for fname in os.listdir(dirname)
+        if fname.endswith(file_ext)
+    ]
+    )
+    return(res_list)
 
 
 def initialize_file_path(dir_name, split):
