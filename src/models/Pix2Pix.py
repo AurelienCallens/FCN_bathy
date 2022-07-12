@@ -283,7 +283,7 @@ class Pix2Pix():
                         best_rmse = mean_rmse
                         print("New best MA rmse!")
                 else:
-                    print("MA rmse increasing: early stopping!")
+                    print("MA rmse increasing: early stopping! Value: " + str(mean_rmse))
                     break
                 
                     
