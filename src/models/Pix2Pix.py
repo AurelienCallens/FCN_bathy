@@ -276,9 +276,8 @@ class Pix2Pix():
             metrics = np.round(current_model.evaluate(self.val_gen, verbose=0), 4)
             rmse.append(metrics[1])
             
-            mean_rmse = np.mean(rmse[-self.PATIENCE:])
-            
             if ((batchIndex + 1) == self.train_gen.__len__()) and ((epoch + 1) % self.PATIENCE == 0):
+                mean_rmse = np.mean(rmse[-self.PATIENCE:])
                 if (mean_rmse < best_rmse):
                         best_rmse = mean_rmse
                         print("New best MA rmse!")
