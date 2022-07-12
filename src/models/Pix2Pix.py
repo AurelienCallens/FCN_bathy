@@ -270,11 +270,12 @@ class Pix2Pix():
             elapsed_time = datetime.datetime.now() - start_time
             
             # Calculate metrics for early stopping
-            current_model = self.generator
-            current_model.compile(optimizer=Adam(self.LR, 0.5),
-                                  loss='mse', metrics=[root_mean_squared_error, psnr])
-            metrics = np.round(current_model.evaluate(self.val_gen, verbose=0), 4)
-            rmse.append(metrics[1])
+            if ((batchIndex + 1) == self.train_gen.__len__()):
+                current_model = self.generator
+                current_model.compile(optimizer=Adam(self.LR, 0.5),
+                                      loss='mse', metrics=[root_mean_squared_error, psnr])
+                metrics = np.round(current_model.evaluate(self.val_gen, verbose=0), 4)
+                rmse.append(metrics[1])
             
             if ((batchIndex + 1) == self.train_gen.__len__()) and ((epoch + 1) % self.PATIENCE == 0):
                 mean_rmse = np.mean(rmse[-self.PATIENCE:])
