@@ -83,7 +83,7 @@ class Pix2Pix():
         self.EPOCHS = params['Train']['EPOCHS']
         self.BATCH_SIZE = params['Train']['BATCH_SIZE']
         self.LR = params['Train']['LR_P2P']
-        self.PATIENCE = params['Callbacks']['PATIENCE']
+        self.PATIENCE = params['Callbacks']['PATIENCE_P2P']
         optimizer = Adam(self.LR, 0.5)
         optimizer_disc = SGD(0.0002)
 

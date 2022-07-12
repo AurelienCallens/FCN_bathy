@@ -85,7 +85,8 @@ class Param():
         hyper['Callbacks'] = {'DECAY_LR': True,
                               'FACTOR_DECAY': 0.8,
                               'N_EPOCHS_DECAY': 20,
-                              'PATIENCE': 20}
+                              'PATIENCE': 20,
+                              'PATIENCE_P2P': 50}
 
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(hyper, f, ensure_ascii=False, indent=4)
