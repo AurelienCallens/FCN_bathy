@@ -290,13 +290,14 @@ class Pix2Pix():
             # Display progress at the end of each epoch
             if ((batchIndex + 1) == self.train_gen.__len__()) and (epoch % sample_interval == 0):
 
-                print("[Epoch %d/%d] [Batch %d/%d] [D loss real: %f] [D loss fake: %f] [G loss: %f] [MA RMSE: %f] time: %s" % (epoch+1, self.EPOCHS,
+                print("[Epoch %d/%d] [Batch %d/%d] [D loss real: %f] [D loss fake: %f] [G loss: %f] [RMSE: %f] [MA RMSE: %f] time: %s" % (epoch+1, self.EPOCHS,
                                                                                                                                          batchIndex+1, self.train_gen.__len__(),
                                                                                                                                          d_loss_real[
                                                                                                                                              0],
                                                                                                                                          d_loss_fake[
                                                                                                                                              0],
                                                                                                                                          g_loss[0],
+                                                                                                                                         metrics[1],
                                                                                                                                          best_rmse,
                                                                                                                                          elapsed_time))
                 # Plot the progress                                                                                                                         
