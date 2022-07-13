@@ -49,17 +49,14 @@ class Bathy_inv_network:
     def train_Pix2pix(self):
 
         network = Pix2Pix(self.params)
-
         network.train(sample_interval=1, img_index=8)
-        Trained_model = network.generator
         test_gen = network.test_gen
-        self.save_model(Trained_model, test_gen, net="Pix2pix")
+        self.save_model(network, test_gen, net="Pix2pix")
         tf.keras.backend.clear_session()
 
     def save_model(self, Trained_model, test_gen, net='Unet'):
         # Saving the model and its performance
         if (net == 'Unet'):
-            network = net
             epoch_tr = len(Trained_model[1].history['loss'])
             filters_g = self.params['Net_str']['FILTERS']
             filters_d = None
@@ -71,8 +68,7 @@ class Bathy_inv_network:
             metrics = np.round(Trained_model[0].evaluate(test_gen), 4)
             model = Trained_model[0]
         else:
-            network = net
-            epoch_tr = self.params['Train']['EPOCHS']
+            epoch_tr = Trained_model.epoch_tr
             filters_g = self.params['Net_str']['FILTERS_G']
             filters_d = self.params['Net_str']['FILTERS_D']
             opti = 'Adam'
@@ -80,12 +76,13 @@ class Bathy_inv_network:
             fac_dec = None
             ep_dec = None
             early_s = None
-            Trained_model.compile(optimizer=tf.keras.optimizers.Adam(lr, 0.5),
+            model = Trained_model.generator
+            model.compile(optimizer=tf.keras.optimizers.Adam(lr, 0.5),
                                   loss='mse', metrics=[root_mean_squared_error, absolute_error, ssim, ms_ssim, pred_min, pred_max])
-            metrics = np.round(Trained_model.evaluate(test_gen), 4)
-            model = Trained_model
+            metrics = np.round(model.evaluate(test_gen), 4)
 
-        name = 'trained_models/{model}_{data_fp}_f{filters}_b{batch_size}_ep{epochs}_{date}'.format(model=network,
+
+        name = 'trained_models/{model}_{data_fp}_f{filters}_b{batch_size}_ep{epochs}_{date}'.format(model=net,
                                                                                                     data_fp=self.params['Input']['DIR_NAME'],
                                                                                                     filters=filters_g,
                                                                                                     batch_size=self.params['Train']['BATCH_SIZE'],

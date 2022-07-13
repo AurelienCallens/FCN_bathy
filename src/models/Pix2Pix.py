@@ -81,6 +81,7 @@ class Pix2Pix():
 
         # Training
         self.EPOCHS = params['Train']['EPOCHS']
+        self.epoch_tr = params['Train']['EPOCHS']
         self.BATCH_SIZE = params['Train']['BATCH_SIZE']
         self.LR = params['Train']['LR_P2P']
         self.PATIENCE = params['Callbacks']['PATIENCE_P2P']
@@ -268,7 +269,7 @@ class Pix2Pix():
             g_loss = self.combined.train_on_batch([imgs_A, imgs_B], [valid, imgs_A])
 
             elapsed_time = datetime.datetime.now() - start_time
-            
+
             # Calculate metrics for early stopping
             if ((batchIndex + 1) == self.train_gen.__len__()):
                 current_model = self.generator
@@ -276,7 +277,7 @@ class Pix2Pix():
                                       loss='mse', metrics=[root_mean_squared_error, psnr])
                 metrics = np.round(current_model.evaluate(self.val_gen, verbose=0), 4)
                 rmse.append(metrics[1])
-            
+
             if ((batchIndex + 1) == self.train_gen.__len__()) and ((epoch + 1) % self.PATIENCE == 0):
                 mean_rmse = np.mean(rmse[-self.PATIENCE:])
                 if (mean_rmse < best_rmse):
@@ -284,9 +285,9 @@ class Pix2Pix():
                         print("New best MA rmse!")
                 else:
                     print("MA rmse increasing: early stopping! Value: " + str(mean_rmse))
+                    self.epoch_tr = (epoch+1)
                     break
-                
-                    
+
             # Display progress at the end of each epoch
             if ((batchIndex + 1) == self.train_gen.__len__()) and (epoch % sample_interval == 0):
 
@@ -302,7 +303,7 @@ class Pix2Pix():
                                                                                                                                          elapsed_time))
                 # Plot the progress                                                                                                                         
                 self.sample_images(epoch, img_ind=img_index)
-            
+
 
     def sample_images(self, epoch, img_ind):
         """Function to plot the predicted image from the generator
