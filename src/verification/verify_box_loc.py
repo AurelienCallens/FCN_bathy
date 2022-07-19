@@ -21,7 +21,7 @@ import matplotlib.patches as patches
 from scipy.interpolate import griddata
 from src.data_prep.img_processing import img_rotation, proj_rot
 
-final_df = pd.read_csv('data_CNN/Data_processed/meta_df.csv')
+final_df = pd.read_csv('data_CNN/Data_processed/Meta_df.csv')
 date_unique = final_df['Date'].sort_values().unique()
 zm_unique = final_df['Z_m'].sort_values().unique()
 bat_df = pd.read_csv("data_CNN/Data_processed/Processed_bathy.csv")
@@ -64,7 +64,7 @@ for i, file in enumerate(fp_snp[:10]):
     CS = ax.contour(x_mesh, y_mesh, z_mesh, alpha=0.6, cmap='jet',
                     levels=np.arange(-8, 8.5, 0.5))
     # Create a Rectangle patch
-    rect = patches.Rectangle((70, 70), 256, 256, linewidth=1.5,
+    rect = patches.Rectangle((70, 90), 256, 256, linewidth=1.5,
                              edgecolor='r', facecolor='none', linestyle='dashed')
     # Add the patch to the Axes
     ax.add_patch(rect)

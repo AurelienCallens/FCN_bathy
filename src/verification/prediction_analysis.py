@@ -16,6 +16,7 @@ import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 from numpy.random import seed
 from src.models.UnetModel import UNet
+import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from scipy.ndimage import gaussian_filter
 
@@ -23,6 +24,7 @@ from src.Param import Param
 from src.executor.tf_init import start_tf_session
 from src.utils import initialize_file_path
 from src.evaluation.metric_functions import * 
+from src.verification.verif_functions import plot_predictions
 
 # 0) Initialize session
 #mode = 'cpu'
@@ -34,7 +36,7 @@ seed(42)
 # tensorflow seed fixing
 tf.random.set_seed(42)
 
-case = 1
+case = 23
 res_csv = pd.read_csv('trained_models/Results_test.csv')
 
 params = Param('./configs/' + res_csv['Param_file'][case]).load()
@@ -63,7 +65,7 @@ Trained_model.evaluate(train_gen)
 preds = Trained_model.predict(test_gen)
 
 
-plot_predictions(test_generator=test_gen, predictions=preds, every_n=4)
+plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
 
 ########################################
 # Display predictions with uncertainty #
@@ -230,9 +232,9 @@ acc_array = np.array(list(map(lambda x, y: calculate_metrics(x, np.expand_dims(y
 acc_array = pd.DataFrame(acc_array, columns=('rmse', 'mae', 'pnsr', 'ssim', 'ms_ssim'))
 #acc_array['std'] = list(map(np.mean, preds_std))
 #acc_array['std'] = std_pred
-acc_array['true'] = true
-acc_array['input'] = X
-acc_array['pred'] = list(map(lambda x: np.round(x,2), avg_pred))
+#acc_array['true'] = true
+#acc_array['input'] = X
+#acc_array['pred'] = list(map(lambda x: np.round(x,2), avg_pred))
 acc_array['m_snap'] = mean_snap
 
 acc_array['Date'] = list(map(lambda x: os.path.basename(x)[:-4], test_input))
@@ -257,7 +259,7 @@ acc_array['rip'] = 0
 acc_array.loc[acc_array['bathy'].isin( ['2017-03-27', '2018-01-31']), 'rip'] = 1
 
 
-acc_array.to_csv('Accuracy_test_set_new.csv')
+acc_array.to_csv('data_CNN/Results/Accuracy_data_ext_Unet.csv')
 
 ########################################
 # Error map vs Tide                    #

@@ -8,4 +8,4 @@
 
 # Data repository
 env/*
-
+trained_models/Unet.h5
