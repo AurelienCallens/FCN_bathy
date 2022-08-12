@@ -15,6 +15,7 @@ import configs.Settings_data as param_data
 from src.data_prep.make_cnn_dataset import generate_data_folders_cnn
 from src.data_prep.make_img_csv import make_img_csv
 
+
 class Generate_dataset():
     def __init__(self, meta_csv, output_fp):
 
@@ -24,7 +25,7 @@ class Generate_dataset():
         self.Img_folder_path = param_data.Img_folder_path
         self.wind_pos = param_data.wind_pos
         self.wind_pos_062021 = param_data.wind_pos_062021
-
+        self.filt_rip = param_data.filt_rip
         self.df_fp_bat = param_data.df_fp_bat
         self.bathy_range = param_data.bathy_range
         self.output_size = param_data.output_size
@@ -50,7 +51,8 @@ class Generate_dataset():
         generate_data_folders_cnn(self.fp_name, self.csv_path,
                                   self.df_fp_bat,
                                   self.output_size, self.tide_min,
-                                  self.tide_max, self.test_bathy)
+                                  self.tide_max, self.test_bathy,
+                                  self.filt_rip)
 
 
 if __name__ == '__main__':

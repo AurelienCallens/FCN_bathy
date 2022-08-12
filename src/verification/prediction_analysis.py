@@ -25,6 +25,7 @@ from src.executor.tf_init import start_tf_session
 from src.utils import initialize_file_path
 from src.evaluation.metric_functions import * 
 from src.verification.verif_functions import plot_predictions
+from src.utils import sorted_list_path
 
 # 0) Initialize session
 #mode = 'cpu'
@@ -36,7 +37,7 @@ seed(42)
 # tensorflow seed fixing
 tf.random.set_seed(42)
 
-case = 23
+case = 32
 res_csv = pd.read_csv('trained_models/Results_test.csv')
 
 params = Param('./configs/' + res_csv['Param_file'][case]).load()
@@ -44,6 +45,7 @@ params = Param('./configs/' + res_csv['Param_file'][case]).load()
 train_input, train_target = initialize_file_path(params['Input']['DIR_NAME'], 'Train')
 val_input, val_target = initialize_file_path(params['Input']['DIR_NAME'], 'Validation')
 test_input, test_target = initialize_file_path(params['Input']['DIR_NAME'], 'Test')
+test_test = sorted_list_path("./data_CNN/Test_data/Test/Input/")
 
 # 1) Load a model
 Unet_model = UNet(params)
@@ -62,8 +64,47 @@ Trained_model.evaluate(test_gen)
 train_gen = Unet_model.data_generator('Train_no_aug')
 Trained_model.evaluate(train_gen)
 
-preds = Trained_model.predict(test_gen)
+############### Test on unseen data 
 
+X_img = np.load(test_test[0])
+X_img.shape
+np.expand_dims(X_img, axis=0)
+pred_new = Trained_model.predict(np.expand_dims(X_img, axis=0))
+
+plt.imshow(pred_new.squeeze())
+
+
+
+_vmin, _vmax = np.min(pred_new)-1, np.max(pred_new)+1
+
+fig = plt.figure(figsize=(10, 8))
+gs = gridspec.GridSpec(2, 6)
+gs.update(wspace=0.8, hspace=0.5)
+ax1 = fig.add_subplot(gs[0, :2], )
+ax1.imshow(np.uint8(X_img.squeeze()[:, :, 0]*255), cmap='gray')
+ax2 = fig.add_subplot(gs[0, 2:4])
+ax2.imshow(np.uint8(X_img.squeeze()[:, :, 1]*255), cmap='gray')
+ax3 = fig.add_subplot(gs[0, 4:])
+ax3.imshow(np.uint8(X_img.squeeze()[:, :, 2]*255), cmap='gray')
+ax4 = fig.add_subplot(gs[1, :3])
+im = ax4.imshow(gaussian_filter(pred_new.squeeze().astype('float32'), sigma=4), cmap='jet', vmin=_vmin, vmax=_vmax)
+plt.colorbar(im, ax=ax4)
+ax5 = fig.add_subplot(gs[1, 3:])
+xs, ys = np.arange(0,512), np.arange(0,512)
+xgrid, ygrid = np.meshgrid(xs, ys)
+xdata, ydata = np.ravel(xgrid), np.ravel(ygrid)
+#im = ax5.tricontour(xdata, ydata, np.ravel(gaussian_filter(pred_new.squeeze().astype('float32'), sigma=5)),
+#                cmap='jet', vmin=_vmin, vmax=_vmax)
+
+im = ax5.contour(np.flipud(gaussian_filter(pred_new.squeeze().astype('float32'), sigma=4)),
+                 cmap='jet', vmin=_vmin, vmax=_vmax, levels=10)
+plt.colorbar(im, ax=ax5)
+ax1.title.set_text('Mean RGB Snap')
+ax2.title.set_text('Mean RGB Timex')
+ax3.title.set_text('Env. Cond.')
+ax4.title.set_text('Pred. bathy')
+ax5.title.set_text('Pred. bathy')
+plt.show()
 
 plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
 

@@ -22,7 +22,7 @@ from src.data_prep.img_processing import img_rotation, proj_rot, crop_img, ffill
 
 
 def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
-                              tide_min, tide_max, test_bathy):
+                              tide_min, tide_max, test_bathy, filt_rip):
     """Prepare the images and generate associated folders to train a tensorflow
     model
 
@@ -52,6 +52,9 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
         Filepath of the csvfile with bathymetric data
     output_size : tuple
         Output size in pixels
+    filt_rip : bool
+        Filter images of the 2 bathy surveys with rip by tide. This removes 
+        the images with no information i.e. where the tide is too high (<2.5m)
     tide_min : float
         Minimum tide level in meters to filter images by tide
     tide_max : float
@@ -75,6 +78,10 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
         final_df = final_df[final_df['Z_m'] > tide_min].reset_index(drop=True)
     if type(tide_max) == float:
         final_df = final_df[final_df['Z_m'] < tide_max].reset_index(drop=True)
+
+    if filt_rip:
+        bathy_rip = ((final_df['bathy'] == '2017-03-27') | (final_df['bathy'] == '2018-01-31')) & (final_df['Tide'] > 2.5)
+        final_df = final_df[~bathy_rip]
 
     final_df.sort_values('Date', ignore_index=True, inplace=True)
 
@@ -187,3 +194,91 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
 
         name_tar = fp_name + temp_df.loc[0, 'Split'] + '/Target/' + date + '.npy'
         np.save(name_tar, z_mesh.astype(np.float16))
+
+
+
+def transform_test_image(df_fp_img, output_size):
+    """Prepare one test image to be used by a tensorflow
+    model
+
+    This function prepares the images and the bathymetric data to be used by a
+    tensorflow model. X's are arrays with 3 channels: mean RGB of snap, mean
+    RGB of timex and matrix with normalized environmental conditions. 
+
+    Parameters
+    ----------
+    fp_snap : str
+
+    fp_timex : str
+
+    output_size : tuple
+        Output size in pixels
+    vec_cond : float
+
+    Output
+    ------
+
+    """
+    # Import df
+    # Img dataframe
+    print('Importing meta csv')
+    final_df = pd.read_csv(df_fp_img)
+
+    # Scaling 0-1
+    scaler = MinMaxScaler()
+    final_df['Hs_c'] = scaler.fit_transform(final_df[['Hs_m']])
+    final_df['Tp_c'] = scaler.fit_transform(final_df[['Tp_m']])
+    final_df['Dir_c'] = scaler.fit_transform(final_df[['Dir_m']])
+    final_df['Tide_c'] = scaler.fit_transform(final_df[['Tide']])
+
+    # Bathy dataframe
+    print('Creating folders')
+    # Create folders
+    splits = ['Test']
+    input_paths = ["Test_data/" + i + '/Input/' for i in splits]
+    newpaths = input_paths
+    list(map(lambda x: os.makedirs(x, exist_ok=True), newpaths))
+
+    # Extract unique date + hour
+    final_df = final_df[final_df['bathy'] == 'Test'].reset_index()
+    date_unique = final_df['Date'].sort_values().unique()
+
+    # Loop through every date + hour
+
+    for date in date_unique:
+        temp_df = final_df[final_df['Date'] == date].reset_index()
+
+        # X tensor (3, img_size, img_size) with mean RGB snap, timex
+        # and env. cond
+        # Prepare snap and timex
+        fp_snp = list(temp_df.loc[(temp_df['Type_img'] == 'snap'), 'Fp_img'])
+        fp_tmx = list(temp_df.loc[(temp_df['Type_img'] == 'timex'), 'Fp_img'])
+
+        data_snp, trans_snp = img_rotation(fp_snp[0])
+        data_tmx, trans_tmx = img_rotation(fp_tmx[0])
+
+        # show(np.mean(data_snp, axis=0), transform=transform_snp, cmap='Greys_r')
+        # show(np.mean(data_tmx, axis=0), transform=transform_tmx,
+        # cmap='Greys_r')
+
+        # Extract window
+        win_size = output_size/2
+        win_coord = eval(temp_df.loc[0, 'X_Y'])
+        snp_mat = crop_img(data_snp, trans_snp, win_coord, win_size)/255
+        tmx_mat = crop_img(data_tmx, trans_tmx, win_coord, win_size)/255
+
+        # Prepare env cond matrix
+        env_mat = np.zeros(snp_mat.shape)
+        mid = int(snp_mat.shape[0]/2)
+        env_mat[0:mid, 0:mid] = temp_df.loc[0, 'Hs_c']
+        env_mat[0:mid, mid:] = temp_df.loc[0, 'Tp_c']
+        env_mat[mid:, 0:mid] = temp_df.loc[0, 'Dir_c']
+        env_mat[mid:, mid:] = temp_df.loc[0, 'Tide_c']
+
+        # Export matrix as img
+        mat_3d = np.dstack((snp_mat, tmx_mat, env_mat))
+        name_inp = 'Test_data/' + 'Test' + '/Input/' + date + '.npy'
+        np.save(name_inp, mat_3d.astype(np.float16))
+
+transform_test_image(df_fp_img="/home/aurelien/Desktop/FCN_bathy/data_CNN/Data_processed/Meta_df (copy).csv",
+                     output_size=512)

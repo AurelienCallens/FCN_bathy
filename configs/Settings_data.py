@@ -34,6 +34,8 @@ output_size = 512
 tide_min = 0.9
 tide_max = None
 
+# Filter images with tide above 2.5meters for bathy survey with RIP 
+filt_rip = True
 
 # Keeping only the days before and after the bathymetric surveys:
 
