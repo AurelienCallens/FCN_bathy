@@ -51,9 +51,9 @@ test_test = sorted_list_path("./data_CNN/Test_data/Test/Input/")
 Unet_model = UNet(params)
 
 Trained_model = tf.keras.models.load_model(res_csv['Name'][case],
-                                           custom_objects={'absolute_error':absolute_error,
-                                                           'pred_min':pred_min,
-                                                           'pred_max':pred_max},
+                                           custom_objects={'absolute_error': absolute_error,
+                                                           'pred_min': pred_min,
+                                                           'pred_max': pred_max},
                                            compile=False)
 
 Trained_model.compile(optimizer=Adam(params['Train']['LR'], 0.5), loss='mse', metrics=[root_mean_squared_error,absolute_error, psnr, ssim, ms_ssim])
