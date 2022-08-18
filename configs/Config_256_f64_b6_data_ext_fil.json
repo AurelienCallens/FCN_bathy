@@ -16,14 +16,14 @@
         "K_INIT": "he_normal",
         "PRETRAINED_W": false,
         "FILTERS": 64,
-        "FILTERS_G": 32,
+        "FILTERS_G": 64,
         "FILTERS_D": 8,
         "NOISE_STD": 0.05,
         "DROP_RATE": 0.2
     },
     "Train": {
         "BATCH_SIZE": 6,
-        "EPOCHS": 500,
+        "EPOCHS": 1000,
         "LR": 0.002,
         "LR_P2P": 0.0002,
         "OPTI": "Adam"
@@ -33,6 +33,6 @@
         "FACTOR_DECAY": 0.8,
         "N_EPOCHS_DECAY": 20,
         "PATIENCE": 20,
-        "PATIENCE_P2P": 50
+        "PATIENCE_P2P": 20
     }
 }
