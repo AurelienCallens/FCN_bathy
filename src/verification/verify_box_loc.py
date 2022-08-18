@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Script to verify the position of the box from which we extract the data in the images
+"""Script to verify the position of the box from which we extract the data in
+the images. Only use when defining a new window position
 
 Usage:
 

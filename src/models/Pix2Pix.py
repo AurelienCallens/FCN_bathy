@@ -14,7 +14,6 @@ Author:
 import datetime
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from scipy.ndimage import gaussian_filter
@@ -30,6 +29,7 @@ from src.evaluation.metric_functions import *
 from src.dataloader.CustomGenerator import CustomGenerator
 from src.dataloader.seq_iterator_gan import ParallelIterator
 
+matplotlib.use('Agg')
 
 class Pix2Pix():
     """
@@ -88,7 +88,6 @@ class Pix2Pix():
         optimizer = Adam(self.LR, 0.5)
         optimizer_disc = SGD(0.0002)
 
-
         # Configure data sequence generator
         self.dataset_name = 'test_res'
         self.train_gen = CustomGenerator(batch_size=self.BATCH_SIZE,
@@ -96,7 +95,7 @@ class Pix2Pix():
                                          input_img_paths=self.train_input,
                                          target_img_paths=self.train_target,
                                          split='Train')
-        
+
         self.val_gen = CustomGenerator(batch_size=self.BATCH_SIZE,
                                          params=params,
                                          input_img_paths=self.val_input,
@@ -113,14 +112,12 @@ class Pix2Pix():
         patch = int(self.IMG_ROWS / 2**4)
         self.disc_patch = (patch, patch, 1)
 
-
         # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
         self.discriminator.compile(loss='binary_crossentropy',
                                    optimizer=optimizer_disc,
                                    metrics=['accuracy'],
                                    loss_weights=[0.5])
-
 
         # Build the generator
         self.generator = self.build_generator()
@@ -163,7 +160,7 @@ class Pix2Pix():
         def deconv2d(layer_input, skip_input, filters, dropout_rate=0):
             """Layers used during upsampling"""
             u = UpSampling2D(size=2)(layer_input)
-            u = Conv2D(filters,strides=1, **conv_args)(u)
+            u = Conv2D(filters, strides=1, **conv_args)(u)
             if dropout_rate:
                 u = Dropout(dropout_rate)(u)
             u = BatchNormalization(momentum=0.8)(u)
@@ -192,7 +189,8 @@ class Pix2Pix():
         u6 = deconv2d(u5, d1, self.gf)
 
         u7 = UpSampling2D(size=2)(u6)
-        output_img = Conv2D(1, kernel_size=4, strides=1, padding='same', activation='linear')(u7)
+        output_img = Conv2D(1, kernel_size=4, strides=1, padding='same',
+                            activation='linear')(u7)
 
         return Model(d0, output_img)
 
@@ -201,7 +199,8 @@ class Pix2Pix():
 
         def d_layer(layer_input, filters, f_size=4, bn=True):
             """Discriminator layer"""
-            d = Conv2D(filters, kernel_size=f_size, strides=2, padding='same')(layer_input)
+            d = Conv2D(filters, kernel_size=f_size, strides=2,
+                       padding='same')(layer_input)
             d = GaussianNoise(self.NOISE_STD)(d)
             d = Dropout(self.DROP_RATE)(d)
             d = LeakyReLU(alpha=0.2)(d)
@@ -209,8 +208,10 @@ class Pix2Pix():
                 d = BatchNormalization(momentum=0.8)(d)
             return d
 
-        img_A = Input(shape=[self.IMG_ROWS, self.IMG_ROWS, 1], name='target_image')
-        img_B = Input(shape=[self.IMG_ROWS, self.IMG_ROWS, self.BANDS], name='input_image')
+        img_A = Input(shape=[self.IMG_ROWS, self.IMG_ROWS, 1],
+                      name='target_image')
+        img_B = Input(shape=[self.IMG_ROWS, self.IMG_ROWS, self.BANDS],
+                      name='input_image')
 
         # Concatenate image and conditioning image by channels to produce input
         combined_imgs = concatenate([img_A, img_B])
@@ -257,8 +258,10 @@ class Pix2Pix():
             fake_A = self.generator.predict(imgs_B)
 
             # Train the discriminators (original images = real / generated = Fake)
-            d_loss_real = self.discriminator.train_on_batch([imgs_A, imgs_B], valid)
-            d_loss_fake = self.discriminator.train_on_batch([fake_A, imgs_B], fake)
+            d_loss_real = self.discriminator.train_on_batch([imgs_A, imgs_B],
+                                                            valid)
+            d_loss_fake = self.discriminator.train_on_batch([fake_A, imgs_B],
+                                                            fake)
             # d_loss = np.add(d_loss_real, d_loss_fake)/2
 
             # -----------------
@@ -303,7 +306,6 @@ class Pix2Pix():
                                                                                                                                          elapsed_time))
                 # Plot the progress                                                                                                                         
                 self.sample_images(epoch, img_ind=img_index)
-
 
     def sample_images(self, epoch, img_ind):
         """Function to plot the predicted image from the generator

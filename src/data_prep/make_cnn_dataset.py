@@ -196,7 +196,6 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
         np.save(name_tar, z_mesh.astype(np.float16))
 
 
-
 def transform_test_image(df_fp_img, output_size):
     """Prepare one test image to be used by a tensorflow
     model

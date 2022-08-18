@@ -23,12 +23,12 @@ from scipy.ndimage import gaussian_filter
 from src.Param import Param
 from src.executor.tf_init import start_tf_session
 from src.utils import initialize_file_path
-from src.evaluation.metric_functions import * 
+from src.evaluation.metric_functions import *
 from src.verification.verif_functions import plot_predictions
 from src.utils import sorted_list_path
 
 # 0) Initialize session
-#mode = 'cpu'
+# mode = 'cpu'
 mode = 'cpu'
 start_tf_session(mode)
 
@@ -261,7 +261,6 @@ X = list(map(lambda x: np.round(x,2), X))
 
 mean_snap = list(map(lambda x: np.round(np.median(x)*255,2),X))
 
- 
 def calculate_metrics(true, pred):
     return([root_mean_squared_error(true, pred).numpy(),
             absolute_error(true, pred).numpy(),
