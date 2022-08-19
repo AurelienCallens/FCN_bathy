@@ -24,7 +24,7 @@ from src.Param import Param
 from src.executor.tf_init import start_tf_session
 from src.utils import initialize_file_path
 from src.evaluation.metric_functions import *
-from src.verification.verif_functions import plot_predictions
+from src.verification.verif_functions import plot_predictions, averaged_pred, apply_black_patch
 from src.utils import sorted_list_path
 
 # 0) Initialize session
@@ -73,8 +73,6 @@ pred_new = Trained_model.predict(np.expand_dims(X_img, axis=0))
 
 plt.imshow(pred_new.squeeze())
 
-
-
 _vmin, _vmax = np.min(pred_new)-1, np.max(pred_new)+1
 
 fig = plt.figure(figsize=(10, 8))
@@ -113,23 +111,6 @@ plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
 ########################################
 
 
-def averaged_pred(test_gen, Trained_model, rep):
-    avg_pred = []
-    std_pred = []
-    err_pred = []
-    for j in range(test_gen.__len__()):
-        true_0 = test_gen.__getitem__(j)[1]
-        input_0 = test_gen.__getitem__(j)[0]
-        pred_0 = Trained_model.predict(test_gen.__getitem__(j)[0]).squeeze()
-
-        for i in range(rep-1):
-            pred_0 = np.dstack([pred_0 , Trained_model.predict(test_gen.__getitem__(j)[0]).squeeze()])
-
-        avg_pred.append(pred_0.mean(axis=2))
-        std_pred.append(pred_0.std(axis=2))
-        err_pred.append(np.abs(true_0.squeeze() - pred_0.mean(axis=2)))
-    return [avg_pred, std_pred, err_pred]
-
 avg_pred, std_pred, err_pred = averaged_pred(test_gen, Trained_model, 20)
 
 
@@ -138,7 +119,6 @@ snap = test_gen.__getitem__(item)[0].squeeze()[:, :, 0]*255
 timex = test_gen.__getitem__(item)[0].squeeze()[:, :, 1]*255
 true = test_gen.__getitem__(item)[1].squeeze().astype('float32')
 
-import matplotlib.pyplot as plt
 _vmin, _vmax = np.min(true)-1, np.max(true)+1
 
 fig = plt.figure(figsize=(10, 8))
@@ -218,12 +198,6 @@ ax2.imshow(np.uint8(test_gen.__getitem__(item)[0].squeeze()[:, :, 2]*255), cmap=
 img = input_0[0]
 true_0 = test_gen.__getitem__(item)[1]
 
-def apply_grey_patch(image, top_left_x, top_left_y, patch_size):
-    patched_image = np.array(image, copy=True)
-    patched_image[top_left_y:(top_left_y + patch_size), top_left_x:(top_left_x + patch_size), :] = 0
-
-    return patched_image
-
 pred_0 = Trained_model.predict(input_0)
 PATCH_SIZE = 32
 sensitivity_map = np.zeros((img.shape[0], img.shape[1]))
@@ -231,7 +205,7 @@ sensitivity_map = np.zeros((img.shape[0], img.shape[1]))
 # Iterate the patch over the image
 for top_left_x in range(0, img.shape[0], PATCH_SIZE):
     for top_left_y in range(0, img.shape[1], PATCH_SIZE):
-        patched_image = apply_grey_patch(img, top_left_x, top_left_y, PATCH_SIZE)
+        patched_image = apply_black_patch(img, top_left_x, top_left_y, PATCH_SIZE)
         predicted_img = Trained_model.predict(np.array([patched_image]))[0]
 
         confidence = float(absolute_error(true_0, predicted_img)/absolute_error(true_0, pred_0))
@@ -261,13 +235,6 @@ X = list(map(lambda x: np.round(x,2), X))
 
 mean_snap = list(map(lambda x: np.round(np.median(x)*255,2),X))
 
-def calculate_metrics(true, pred):
-    return([root_mean_squared_error(true, pred).numpy(),
-            absolute_error(true, pred).numpy(),
-            psnr(true, pred).numpy()[0],
-            ssim(true, pred).numpy()[0],
-            ms_ssim(true, pred).numpy()[0]])
-
 acc_array = np.array(list(map(lambda x, y: calculate_metrics(x, np.expand_dims(y,2)), true, avg_pred)))
 acc_array = pd.DataFrame(acc_array, columns=('rmse', 'mae', 'pnsr', 'ssim', 'ms_ssim'))
 #acc_array['std'] = list(map(np.mean, preds_std))
@@ -287,7 +254,6 @@ tide_wave_cond['Date']= pd.to_datetime(tide_wave_cond['Date'], format="%Y-%m-%d 
 acc_array = pd.merge(acc_array, tide_wave_cond, on='Date', how='inner').drop_duplicates('rmse', ignore_index=True)
 
 
-
 plt.scatter(acc_array['rmse'], acc_array['m_snap'])
 plt.xlabel('RMSE')
 plt.ylabel('Pixel intensity')
@@ -304,6 +270,7 @@ acc_array.to_csv('data_CNN/Results/Accuracy_data_ext_Unet.csv')
 ########################################
 # Error map vs Tide                    #
 ########################################
+
 bathy = '2017-03-27'
 sel_df = acc_array[acc_array['bathy'] == '2017-03-27']
 sel_df['Err'] = np.abs(sel_df['true'] - sel_df['pred'])

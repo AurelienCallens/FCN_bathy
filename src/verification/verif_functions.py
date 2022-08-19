@@ -175,3 +175,67 @@ def plot_predictions(test_generator, predictions, every_n):
         ax4.title.set_text('True bathy')
         ax5.title.set_text('Pred. bathy')
         plt.show()
+
+
+# Make averaged predictions
+
+def averaged_pred(test_gen, Trained_model, rep):
+    """Function to return averaged predictions, associated standard deviations 
+    and errors
+
+    Parameters
+    ----------
+    test_gen :
+        Image generator created with the CustomGenerator class for the test
+        split
+    Trained_model :
+        Trained model
+    rep : int
+        Number of predictions to average
+
+    Output
+    ------
+    List with average pred, standard deviation and errors
+    """
+    avg_pred = []
+    std_pred = []
+    err_pred = []
+    for j in range(test_gen.__len__()):
+        true_0 = test_gen.__getitem__(j)[1]
+        input_0 = test_gen.__getitem__(j)[0]
+        pred_0 = Trained_model.predict(test_gen.__getitem__(j)[0]).squeeze()
+
+        for i in range(rep-1):
+            pred_0 = np.dstack([pred_0 , Trained_model.predict(test_gen.__getitem__(j)[0]).squeeze()])
+
+        avg_pred.append(pred_0.mean(axis=2))
+        std_pred.append(pred_0.std(axis=2))
+        err_pred.append(np.abs(true_0.squeeze() - pred_0.mean(axis=2)))
+    return [avg_pred, std_pred, err_pred]
+
+
+# Apply black patch to an images to perform pertubation analysis
+
+def apply_black_patch(image, top_left_x, top_left_y, patch_size):
+    """Apply black patch to an images to perform pertubation analysis
+
+    Parameters
+    ----------
+    image : array
+        Image
+    top_left_s : int
+        X oordinate of the top left corner of the patch
+    top_left_y : int
+        Y Coordinate of the top left corner of the patch
+     patch_size : int
+        Size in pixel of the patch
+
+    Output
+    ------
+    Image with a black patch at the indicated location
+    """
+    patched_image = np.array(image, copy=True)
+    patched_image[top_left_y:(top_left_y + patch_size), top_left_x:(top_left_x + patch_size), :] = 0
+
+    return patched_image
+

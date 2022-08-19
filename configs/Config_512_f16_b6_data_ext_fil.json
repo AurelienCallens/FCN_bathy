@@ -6,7 +6,7 @@
     },
     "Data_aug": {
         "BRIGHT_R": "[0.9, 1.1]",
-        "SHIFT_R": 0.2,
+        "SHIFT_R": 0.3,
         "ROT_R": 0,
         "V_FLIP": true,
         "H_FLIP": true
@@ -33,6 +33,6 @@
         "FACTOR_DECAY": 0.8,
         "N_EPOCHS_DECAY": 20,
         "PATIENCE": 20,
-        "PATIENCE_P2P": 20
+        "PATIENCE_P2P": 50
     }
 }
