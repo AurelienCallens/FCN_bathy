@@ -65,6 +65,7 @@ class Bathy_inv_network:
             fac_dec = self.params['Callbacks']['FACTOR_DECAY']
             ep_dec = self.params['Callbacks']['N_EPOCHS_DECAY']
             early_s = self.params['Callbacks']['PATIENCE']
+            batch_s = self.params['Train']['BATCH_SIZE_P']
             metrics = np.round(Trained_model[0].evaluate(test_gen), 4)
             model = Trained_model[0]
         else:
@@ -76,6 +77,7 @@ class Bathy_inv_network:
             fac_dec = None
             ep_dec = None
             early_s = None
+            batch_s = self.params['Train']['BATCH_SIZE']
             model = Trained_model.generator
             model.compile(optimizer=tf.keras.optimizers.Adam(lr, 0.5),
                                   loss='mse', metrics=[root_mean_squared_error, absolute_error, ssim, ms_ssim, pred_min, pred_max])
@@ -85,7 +87,7 @@ class Bathy_inv_network:
         name = 'trained_models/{model}_{data_fp}_f{filters}_b{batch_size}_ep{epochs}_{date}'.format(model=net,
                                                                                                     data_fp=self.params['Input']['DIR_NAME'],
                                                                                                     filters=filters_g,
-                                                                                                    batch_size=self.params['Train']['BATCH_SIZE'],
+                                                                                                    batch_size=batch_s,
                                                                                                     epochs=epoch_tr,
                                                                                                     date=datetime.now().strftime("%d-%m-%Y_%H:%M"))
 
@@ -145,6 +147,6 @@ if __name__ == '__main__':
     params_file = 'configs/' + args.config
 
     Bathy_inv = Bathy_inv_network(params_file, args.gpu)
-    Bathy_inv.train_unet(check_gen=False)
+    #Bathy_inv.train_unet(check_gen=False)
     Bathy_inv.train_Pix2pix()
     print("Entrainement fini!")

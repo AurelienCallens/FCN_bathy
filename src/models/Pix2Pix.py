@@ -82,7 +82,7 @@ class Pix2Pix():
         # Training
         self.EPOCHS = params['Train']['EPOCHS']
         self.epoch_tr = params['Train']['EPOCHS']
-        self.BATCH_SIZE = params['Train']['BATCH_SIZE']
+        self.BATCH_SIZE = params['Train']['BATCH_SIZE_P']
         self.LR = params['Train']['LR_P2P']
         self.PATIENCE = params['Callbacks']['PATIENCE_P2P']
         optimizer = Adam(self.LR, 0.5)
@@ -153,8 +153,8 @@ class Pix2Pix():
             d = Conv2D(filters, strides=2, **conv_args)(layer_input)
             d = LeakyReLU(alpha=0.2)(d)
             if bn:
-                d = BatchNormalization(momentum=0.8)(d)
-                d = GaussianNoise(self.NOISE_STD)(d)
+                d = BatchNormalization(momentum=0.8)(d, training=True)
+                # d = GaussianNoise(self.NOISE_STD)(d)
             return d
 
         def deconv2d(layer_input, skip_input, filters, dropout_rate=0):
@@ -162,9 +162,9 @@ class Pix2Pix():
             u = UpSampling2D(size=2)(layer_input)
             u = Conv2D(filters, strides=1, **conv_args)(u)
             if dropout_rate:
-                u = Dropout(dropout_rate)(u)
-            u = BatchNormalization(momentum=0.8)(u)
-            u = GaussianNoise(self.NOISE_STD)(u)
+                u = Dropout(dropout_rate)(u, training=True)
+            u = BatchNormalization(momentum=0.8)(u, training=True)
+            # u = GaussianNoise(self.NOISE_STD)(u)
             u = concatenate([u, skip_input])
             return u
 
@@ -201,11 +201,11 @@ class Pix2Pix():
             """Discriminator layer"""
             d = Conv2D(filters, kernel_size=f_size, strides=2,
                        padding='same')(layer_input)
-            d = GaussianNoise(self.NOISE_STD)(d)
-            d = Dropout(self.DROP_RATE)(d)
+            # d = GaussianNoise(self.NOISE_STD)(d)
+            d = Dropout(self.DROP_RATE)(d, training=True)
             d = LeakyReLU(alpha=0.2)(d)
             if bn:
-                d = BatchNormalization(momentum=0.8)(d)
+                d = BatchNormalization(momentum=0.8)(d, training=True)
             return d
 
         img_A = Input(shape=[self.IMG_ROWS, self.IMG_ROWS, 1],
