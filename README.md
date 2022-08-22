@@ -51,6 +51,10 @@ During training, you have the choice to train on CPU or GPU if you have one.
 
 ### Executing program
 
+#### General workflow 
+
+![alt text](./notebooks/Images/FCN_workflow.png)
+
 #### Processing data before training 
 
 This processing step was developped specifically for Biarritz site. This are the steps to follow: 
