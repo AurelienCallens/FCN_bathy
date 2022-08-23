@@ -34,7 +34,7 @@ output_size = 512
 tide_min = 0.9
 tide_max = None
 
-# Filter images with tide above 2.5meters for bathy survey with RIP 
+# Filter images with tide above 2.5meters for bathy survey with RIP
 filt_rip = True
 
 # Keeping only the days before and after the bathymetric surveys:
@@ -55,4 +55,6 @@ bathy_range = [["2017/03/25", "2017/03/29"],
 # Spliting the data:
 # None : split the data 80% train /20% test for all the bathy surveys
 # "2018-01-31" : keep "2018-01-31" survey as test data
-test_bathy = None  # "2018-01-31"
+# test_bathy = None
+# test_bathy = "2018-01-31"
+test_bathy = "2017-03-27"

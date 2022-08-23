@@ -37,7 +37,7 @@ seed(42)
 # tensorflow seed fixing
 tf.random.set_seed(42)
 
-case = 32
+case = 80
 res_csv = pd.read_csv('trained_models/Results_test.csv')
 
 params = Param('./configs/' + res_csv['Param_file'][case]).load()
@@ -104,6 +104,7 @@ ax4.title.set_text('Pred. bathy')
 ax5.title.set_text('Pred. bathy')
 plt.show()
 
+preds = Trained_model.predict(test_gen)
 plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
 
 ########################################
@@ -114,7 +115,7 @@ plot_predictions(test_generator=test_gen, predictions=preds, every_n=2)
 avg_pred, std_pred, err_pred = averaged_pred(test_gen, Trained_model, 20)
 
 
-item = 20
+item = 8
 snap = test_gen.__getitem__(item)[0].squeeze()[:, :, 0]*255
 timex = test_gen.__getitem__(item)[0].squeeze()[:, :, 1]*255
 true = test_gen.__getitem__(item)[1].squeeze().astype('float32')
@@ -225,6 +226,13 @@ plt.colorbar(im,  fraction=0.046, pad=0.04)
 ########################################
 
 
+def calculate_metrics(true, pred):
+    return([root_mean_squared_error(true, pred).numpy(),
+            absolute_error(true, pred).numpy(),
+            psnr(true, pred).numpy()[0],
+            ssim(true, pred).numpy()[0],
+            ms_ssim(true, pred).numpy()[0]])
+
 #preds = Trained_model.predict(test_gen)
 
 true = np.stack([ test_gen.__getitem__(i)[1] for i in range(test_gen.__len__())], axis=0)
@@ -265,7 +273,7 @@ acc_array['rip'] = 0
 acc_array.loc[acc_array['bathy'].isin( ['2017-03-27', '2018-01-31']), 'rip'] = 1
 
 
-acc_array.to_csv('data_CNN/Results/Accuracy_data_ext_Unet.csv')
+acc_array.to_csv('data_CNN/Results/Accuracy_data_ext_fil_p2p.csv')
 
 ########################################
 # Error map vs Tide                    #

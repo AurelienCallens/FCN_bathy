@@ -53,6 +53,8 @@ During training, you have the choice to train on CPU or GPU if you have one.
 
 #### General workflow 
 
+The general workflow is presented in the diagram below: 
+
 ![alt text](./notebooks/Images/FCN_workflow.png)
 
 #### Processing data before training 
@@ -73,7 +75,7 @@ This processing step was developped specifically for Biarritz site. This are the
     The repository structure is specifically created to work with keras data loading procedures.
 
 
-#### Training the models 
+#### Training and saving the models 
 
 There are two ways to train the models:
 
@@ -100,6 +102,14 @@ There are two ways to train the models:
         bash train_configs.sh [env name]
         ```    
     3. Inspect the results in `trained_models/`.
+
+
+#### Evaluating the performances of the models 
+
+The performances are stored on the test set are saved in this file : `Results_test.csv`. 
+Detailed analysis of the predictions can be done with the following jupyter notebook: `prediction_analysis.ipynb`.
+
+
 
 ## Authors
 

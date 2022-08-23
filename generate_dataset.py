@@ -65,9 +65,7 @@ if __name__ == '__main__':
     meta_file = 'data_CNN/Data_processed/' + args.meta_file
     output_dir = 'data_CNN/' + args.output_fp + '/'
 
-    Generate_dataset(meta_csv = meta_file,
-                               output_fp = output_dir
-                               )
+    Generate_dataset(meta_csv = meta_file, output_fp = output_dir)
 
     print("Generation du dataset fini!")
 

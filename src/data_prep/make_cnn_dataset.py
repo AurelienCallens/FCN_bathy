@@ -87,7 +87,7 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
 
     final_df['Date'] = final_df['Date'].astype(str)
 
-    if type(test_bathy) is not str:
+    if test_bathy is None:
         # Train test by day
         # Train
         final_df['Split'] = 'Train'
@@ -100,7 +100,20 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
         ind = final_df[final_df['Split'] == 'Train'].groupby('bathy', group_keys=False).apply(lambda x: x.sample(frac=0.2)).index
         final_df.loc[ind, 'Split'] = 'Validation'
 
-    else:
+    elif test_bathy == '2017-03-27':
+        # Train test by bathy
+        # Train
+        final_df['Split'] = 'Train'
+
+        # Test
+        bathy_test = '2017-03-27'
+        final_df.loc[final_df['bathy'].apply(lambda x: x == bathy_test), 'Split'] = 'Test'
+
+        # Validation
+        ind = final_df[final_df['Split'] == 'Train'].groupby('bathy', group_keys=False).apply(lambda x: x.sample(frac=0.2)).index
+        final_df.loc[ind, 'Split'] = 'Validation'
+
+    elif test_bathy == '2018-01-31':
         # Train test by bathy
         # Train
         final_df['Split'] = 'Train'
@@ -112,6 +125,9 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
         # Validation
         ind = final_df[final_df['Split'] == 'Train'].groupby('bathy', group_keys=False).apply(lambda x: x.sample(frac=0.2)).index
         final_df.loc[ind, 'Split'] = 'Validation'
+    else:
+        print("Wrong bathy for test")
+        return
 
     # Scaling 0-1
     scaler = MinMaxScaler()
