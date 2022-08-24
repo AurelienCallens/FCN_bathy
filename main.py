@@ -147,6 +147,6 @@ if __name__ == '__main__':
     params_file = 'configs/' + args.config
 
     Bathy_inv = Bathy_inv_network(params_file, args.gpu)
-    #Bathy_inv.train_unet(check_gen=False)
+    Bathy_inv.train_unet(check_gen=False)
     Bathy_inv.train_Pix2pix()
     print("Entrainement fini!")

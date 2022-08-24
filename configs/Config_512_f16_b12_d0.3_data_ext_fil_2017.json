@@ -1,6 +1,6 @@
 {
     "Input": {
-        "DIR_NAME": "Data_ext_fil",
+        "DIR_NAME": "Data_ext_fil_2017",
         "IMG_SIZE": "(512, 512)",
         "N_CHANNELS": 3
     },
@@ -15,8 +15,8 @@
         "ACTIV": "relu",
         "K_INIT": "he_normal",
         "PRETRAINED_W": false,
-        "FILTERS": 48,
-        "FILTERS_G": 48,
+        "FILTERS": 16,
+        "FILTERS_G": 16,
         "FILTERS_D": 8,
         "NOISE_STD": 0.01,
         "DROP_RATE": 0.3

@@ -1,6 +1,6 @@
 {
     "Input": {
-        "DIR_NAME": "Data_ext_fil",
+        "DIR_NAME": "Data_ext_fil_2017",
         "IMG_SIZE": "(512, 512)",
         "N_CHANNELS": 3
     },
@@ -22,7 +22,7 @@
         "DROP_RATE": 0.3
     },
     "Train": {
-        "BATCH_SIZE": 2,
+        "BATCH_SIZE": 6,
         "BATCH_SIZE_P": 1,
         "EPOCHS": 1000,
         "LR": 0.002,
