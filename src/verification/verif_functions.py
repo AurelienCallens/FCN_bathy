@@ -177,6 +177,101 @@ def plot_predictions(test_generator, predictions, every_n):
         plt.show()
 
 
+def predict_novel_data(X_novel, Pred_novel):
+    """Plot predictions of the network for novel data (no observed Y)
+
+    Parameters
+    ----------
+    X_novel : numpy array
+        X tensor
+    Pred_novel : numpy array
+        Prediction of the novel data
+
+    Output
+    ------
+    Return plots of the predictions (Ŷ) with associated inputs.
+    """
+    _vmin, _vmax = np.max([np.min(pred_new)-1, -7]), np.max(pred_new)+1
+    #_vmin, _vmax = np.min(pred_new)-1, np.max(pred_new)+1
+
+    fig = plt.figure(figsize=(10, 8))
+    gs = gridspec.GridSpec(2, 6)
+    gs.update(wspace=0.8, hspace=0.5)
+    ax1 = fig.add_subplot(gs[0, :2], )
+    ax1.imshow(np.uint8(X_novel.squeeze()[:, :, 0]*255), cmap='gray')
+    ax2 = fig.add_subplot(gs[0, 2:4])
+    ax2.imshow(np.uint8(X_novel.squeeze()[:, :, 1]*255), cmap='gray')
+    ax3 = fig.add_subplot(gs[0, 4:])
+    ax3.imshow(np.uint8(X_novel.squeeze()[:, :, 2]*255), cmap='gray')
+    ax4 = fig.add_subplot(gs[1, :3])
+    im = ax4.imshow(gaussian_filter(Pred_novel.squeeze().astype('float32'), sigma=4), cmap='jet', vmin=_vmin, vmax=_vmax)
+    plt.colorbar(im, ax=ax4)
+    ax5 = fig.add_subplot(gs[1, 3:])
+    im = ax5.contour(np.flipud(gaussian_filter(Pred_novel.squeeze().astype('float32'), sigma=4)),
+                     cmap='jet', vmin=_vmin, vmax=_vmax, levels=10)
+    plt.colorbar(im, ax=ax5)
+    ax1.title.set_text('Mean RGB Snap')
+    ax2.title.set_text('Mean RGB Timex')
+    ax3.title.set_text('Env. Cond.')
+    ax4.title.set_text('Pred. bathy')
+    ax5.title.set_text('Pred. bathy')
+    plt.show()
+
+
+def plot_pred_uncertainty(item, test_gen, avg_pred, std_pred, err_pred):
+    """Plot predictions of the network with error and uncertainty for an
+    indicated image
+
+    Parameters
+    ----------
+    item : int
+        Index of the image to be plotted 
+    test_gen :
+        Image generator created with the CustomGenerator class for the test
+    avg_pred : numpy array
+        Averaged predictions for test data
+    std_pred : numpy array
+        Standard errors (uncertainty) associated to the predictions for test data
+    err_pred : numpy array
+        Absolute errors associated to the predictions for test data
+    Output
+    ------
+    Return plots of the predictions (Ŷ) with associated inputs.
+    """
+    snap = test_gen.__getitem__(item)[0].squeeze()[:, :, 0]*255
+    timex = test_gen.__getitem__(item)[0].squeeze()[:, :, 1]*255
+    true = test_gen.__getitem__(item)[1].squeeze().astype('float32')
+
+    _vmin, _vmax = np.min(true)-1, np.max(true)+1
+
+    fig = plt.figure(figsize=(10, 8))
+    gs = gridspec.GridSpec(6, 11)
+    gs.update(wspace=0.8, hspace=0.5)
+    ax1 = fig.add_subplot(gs[:3, 0:3])
+    ax1.imshow(np.uint8(snap), cmap='gray')
+    ax2 = fig.add_subplot(gs[ 3:6, 0:3])
+    ax2.imshow(np.uint8(timex), cmap='gray')
+    ax3 = fig.add_subplot(gs[ :3, 4:7])
+    im = ax3.imshow(true.astype('float32'), cmap='jet', vmin=_vmin, vmax=_vmax)
+    plt.colorbar(im, ax=ax3, fraction=0.046, pad=0.04)
+    ax4 = fig.add_subplot(gs[3:6, 4:7])
+    im = ax4.imshow(avg_pred[item], cmap='jet', vmin=_vmin, vmax=_vmax)
+    plt.colorbar(im, ax=ax4, fraction=0.046, pad=0.04)
+    ax5 = fig.add_subplot(gs[:3, 8:11])
+    im = ax5.imshow(err_pred[item], cmap='inferno')
+    plt.colorbar(im, ax=ax5, fraction=0.046, pad=0.04)
+    ax6 = fig.add_subplot(gs[3:6, 8:11])
+    im = ax6.imshow(std_pred[item]*2, cmap='inferno', vmin=0, vmax=std_pred[item].max()*2)
+    plt.colorbar(im, ax=ax6, fraction=0.046, pad=0.04)
+    ax1.title.set_text('Input Snap')
+    ax2.title.set_text('Input Timex')
+    ax3.title.set_text('True bathy')
+    ax4.title.set_text('Pred. bathy')
+    ax5.title.set_text('Abs. Error')
+    ax6.title.set_text('Uncertainty')
+    plt.show()
+
+
 # Make averaged predictions
 
 def averaged_pred(test_gen, Trained_model, rep):
@@ -212,7 +307,6 @@ def averaged_pred(test_gen, Trained_model, rep):
         std_pred.append(pred_0.std(axis=2))
         err_pred.append(np.abs(true_0.squeeze() - pred_0.mean(axis=2)))
     return [avg_pred, std_pred, err_pred]
-
 
 # Apply black patch to an images to perform pertubation analysis
 
