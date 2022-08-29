@@ -65,7 +65,7 @@ class Bathy_inv_network:
             fac_dec = self.params['Callbacks']['FACTOR_DECAY']
             ep_dec = self.params['Callbacks']['N_EPOCHS_DECAY']
             early_s = self.params['Callbacks']['PATIENCE']
-            batch_s = self.params['Train']['BATCH_SIZE_P']
+            batch_s = self.params['Train']['BATCH_SIZE']
             metrics = np.round(Trained_model[0].evaluate(test_gen), 4)
             model = Trained_model[0]
         else:
@@ -77,7 +77,7 @@ class Bathy_inv_network:
             fac_dec = None
             ep_dec = None
             early_s = None
-            batch_s = self.params['Train']['BATCH_SIZE']
+            batch_s = self.params['Train']['BATCH_SIZE_P']
             model = Trained_model.generator
             model.compile(optimizer=tf.keras.optimizers.Adam(lr, 0.5),
                                   loss='mse', metrics=[root_mean_squared_error, absolute_error, ssim, ms_ssim, pred_min, pred_max])
