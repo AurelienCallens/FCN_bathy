@@ -76,7 +76,7 @@ class Bathy_inv_network:
             lr = self.params['Train']['LR_P2P']
             fac_dec = None
             ep_dec = None
-            early_s = None
+            early_s = self.params['Callbacks']['PATIENCE_P2P']
             batch_s = self.params['Train']['BATCH_SIZE_P']
             model = Trained_model.generator
             model.compile(optimizer=tf.keras.optimizers.Adam(lr, 0.5),

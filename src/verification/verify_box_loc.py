@@ -22,19 +22,19 @@ import matplotlib.patches as patches
 from scipy.interpolate import griddata
 from src.data_prep.img_processing import img_rotation, proj_rot
 
-final_df = pd.read_csv('data_CNN/Data_processed/Meta_df.csv')
+final_df = pd.read_csv('data_CNN/Data_processed/Meta_df_extended.csv')
 date_unique = final_df['Date'].sort_values().unique()
 zm_unique = final_df['Z_m'].sort_values().unique()
 bat_df = pd.read_csv("data_CNN/Data_processed/Processed_bathy.csv")
 
 
-zm = zm_unique[14]
+zm = zm_unique[5]
 temp_df = final_df[final_df['Z_m'] == zm].reset_index(drop=True)
 temp_df['bathy'].unique()
 fp_snp = list(temp_df.loc[(temp_df['Type_img'] == 'snap'), 'Fp_img'])
 fp_tmx = list(temp_df.loc[(temp_df['Type_img'] == 'timex'), 'Fp_img'])
 
-for i, file in enumerate(fp_snp[:10]):
+for i, file in enumerate(fp_snp[:20]):
     data_snp, transform_snp = img_rotation(file)
     #data_tmx, transform_tmx = img_rotation(file)
 
@@ -56,22 +56,22 @@ for i, file in enumerate(fp_snp[:10]):
     z_mesh = griddata((gdf_g['x_n'], gdf_g['y_n']), gdf_g[bathy_survey],
                       (x_mesh, y_mesh), method='linear')
 
-    f, ax = plt.subplots(figsize=(6, 6))
+    f, ax = plt.subplots(figsize=(8, 10))
     # Plot Image
     show(data_snp, transform=transform_snp, ax=ax)
     # Plot contour
     # CS = ax.contourf(x_mesh, y_mesh, z_mesh, alpha=0.2, cmap='jet',
     # levels=np.arange(-8, 8.5, 0.5))
-    CS = ax.contour(x_mesh, y_mesh, z_mesh, alpha=0.6, cmap='jet',
-                    levels=np.arange(-8, 8.5, 0.5))
+    CS = ax.contour(x_mesh, y_mesh, z_mesh, alpha=0.8, cmap='jet',
+                    levels=np.arange(-5, 5, 0.5))
     # Create a Rectangle patch
-    rect = patches.Rectangle((70, 90), 256, 256, linewidth=1.5,
+    rect = patches.Rectangle(eval(temp_df['X_Y'][i]), 256, 256, linewidth=1.5,
                              edgecolor='r', facecolor='none', linestyle='dashed')
     # Add the patch to the Axes
     ax.add_patch(rect)
-    #h, v = CS.legend_elements()
-    #ax.legend(h, v, loc='center left', bbox_to_anchor=(1, 0.5))
+    h, v = CS.legend_elements()
+    ax.legend(h, v, loc='center left', bbox_to_anchor=(1, 0.5))
     ax.set_xlim([0, 550])
     ax.set_ylim([0, 500])
-
     f.tight_layout()
+    plt.show()

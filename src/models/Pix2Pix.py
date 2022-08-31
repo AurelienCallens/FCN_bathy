@@ -154,7 +154,7 @@ class Pix2Pix():
             d = LeakyReLU(alpha=0.2)(d)
             if bn:
                 d = BatchNormalization(momentum=0.8)(d, training=True)
-                # d = GaussianNoise(self.NOISE_STD)(d)
+                d = GaussianNoise(self.NOISE_STD)(d)
             return d
 
         def deconv2d(layer_input, skip_input, filters, dropout_rate=0):
@@ -164,7 +164,7 @@ class Pix2Pix():
             if dropout_rate:
                 u = Dropout(dropout_rate)(u, training=True)
             u = BatchNormalization(momentum=0.8)(u, training=True)
-            # u = GaussianNoise(self.NOISE_STD)(u)
+            u = GaussianNoise(self.NOISE_STD)(u)
             u = concatenate([u, skip_input])
             return u
 
@@ -201,7 +201,7 @@ class Pix2Pix():
             """Discriminator layer"""
             d = Conv2D(filters, kernel_size=f_size, strides=2,
                        padding='same')(layer_input)
-            # d = GaussianNoise(self.NOISE_STD)(d)
+            d = GaussianNoise(self.NOISE_STD)(d)
             d = Dropout(self.DROP_RATE)(d, training=True)
             d = LeakyReLU(alpha=0.2)(d)
             if bn:

@@ -90,6 +90,7 @@ def plot_output_generator(train_gen, n_img):
 
     for i in range(n_img):
         test = train_gen.__getitem__(i)
+        plt.figure(figsize=(8, 8))
         plt.subplot(221)
         plt.imshow(test[0][0][:, :, 0].astype(np.float32), cmap='gray')
         plt.subplot(222)
@@ -97,7 +98,7 @@ def plot_output_generator(train_gen, n_img):
         plt.subplot(223)
         plt.imshow(test[0][0][:, :, 2].astype(np.float32))
         plt.subplot(224)
-        plt.imshow(test[1][0].squeeze().astype(np.float32))
+        plt.imshow(test[1][0].squeeze().astype(np.float32), cmap='jet')
         plt.show()
 
 
@@ -191,7 +192,7 @@ def predict_novel_data(X_novel, Pred_novel):
     ------
     Return plots of the predictions (Ŷ) with associated inputs.
     """
-    _vmin, _vmax = np.max([np.min(pred_new)-1, -7]), np.max(pred_new)+1
+    _vmin, _vmax = np.max([np.min(Pred_novel)-1, -7]), np.max(Pred_novel)+1
     #_vmin, _vmax = np.min(pred_new)-1, np.max(pred_new)+1
 
     fig = plt.figure(figsize=(10, 8))
@@ -207,7 +208,7 @@ def predict_novel_data(X_novel, Pred_novel):
     im = ax4.imshow(gaussian_filter(Pred_novel.squeeze().astype('float32'), sigma=4), cmap='jet', vmin=_vmin, vmax=_vmax)
     plt.colorbar(im, ax=ax4)
     ax5 = fig.add_subplot(gs[1, 3:])
-    im = ax5.contour(np.flipud(gaussian_filter(Pred_novel.squeeze().astype('float32'), sigma=4)),
+    im = ax5.contour(np.flipud(gaussian_filter(Pred_novel.squeeze().astype('float32'), sigma=3)),
                      cmap='jet', vmin=_vmin, vmax=_vmax, levels=10)
     plt.colorbar(im, ax=ax5)
     ax1.title.set_text('Mean RGB Snap')
