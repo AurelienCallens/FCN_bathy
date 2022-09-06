@@ -3,6 +3,10 @@
 
 ## Description
 
+
+![Prediction example](./notebooks/Images/Prediction_example.png)
+
+
 This repository contains python tools to perform bathymetric inversion based on deep learning algorithms. The deep learning algorithms (Unet and Pix2Pix) are implemented in tensorflow. 
 During training, you have the choice to train on CPU or GPU if you have one.
 
@@ -55,7 +59,7 @@ During training, you have the choice to train on CPU or GPU if you have one.
 
 The general workflow is presented in the diagram below: 
 
-![alt text](./notebooks/Images/FCN_workflow.png)
+![Workflow](./notebooks/Images/FCN_workflow.png)
 
 #### Processing data before training 
 

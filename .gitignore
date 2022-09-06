@@ -1,7 +1,8 @@
 # Python extensions
-**/__pycache__
+**/__pycache__/*
 .spyproject
 .ipynb_checkpoints
+.pyc
 
 # Git
 .git
@@ -9,3 +10,4 @@
 # Data repository
 env/*
 trained_models/Unet.h5
+data_CNN/Data_processed/*
