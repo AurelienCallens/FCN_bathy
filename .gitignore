@@ -10,4 +10,3 @@
 # Data repository
 env/*
 trained_models/Unet.h5
-data_CNN/Data_processed/*
