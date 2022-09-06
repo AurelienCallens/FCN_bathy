@@ -111,12 +111,12 @@ class UNet():
 
         def conv_block(input_layer, filters, drop_out=True):
             conv = Conv2D(filters=filters, **conv_args)(input_layer)
-            conv = BatchNormalization(trainable=True)(conv)
+            conv = BatchNormalization(trainable=True)(conv, training=True)
             conv = Conv2D(filters=filters, **conv_args)(conv)
-            conv = BatchNormalization(trainable=True)(conv)
+            conv = BatchNormalization(trainable=True)(conv, training=True)
             conv = GaussianNoise(self.NOISE_STD)(conv)
             if drop_out:
-                conv = Dropout(self.DROP_RATE)(conv, training=True)
+                conv = Dropout(self.DROP_RATE)(conv)
             return conv
 
         def encoder_block(input_layer, num_filters, drop_out=True):
@@ -127,9 +127,9 @@ class UNet():
         def decoder_block(input_layer, skip_features, num_filters):
             x = Conv2DTranspose(num_filters, (2, 2), strides=2,
                                 padding="same")(input_layer)
-            x = BatchNormalization(trainable=True)(x)
+            x = BatchNormalization(trainable=True)(x, training=True)
             x = GaussianNoise(self.NOISE_STD)(x)
-            x = Dropout(self.DROP_RATE)(x, training=True)
+            x = Dropout(self.DROP_RATE)(x)
             x = concatenate([x, skip_features], axis=3)
             x = conv_block(x, num_filters, drop_out=False)
             return x
