@@ -32,7 +32,7 @@
     "Callbacks": {
         "DECAY_LR": true,
         "FACTOR_DECAY": 0.8,
-        "N_EPOCHS_DECAY": 50,
+        "N_EPOCHS_DECAY": 40,
         "PATIENCE": 30,
         "PATIENCE_P2P": 30
     }

@@ -25,14 +25,14 @@
         "BATCH_SIZE": 12,
         "BATCH_SIZE_P": 1,
         "EPOCHS": 1000,
-        "LR": 0.002,
+        "LR": 0.001,
         "LR_P2P": 0.0002,
         "OPTI": "Adam"
     },
     "Callbacks": {
         "DECAY_LR": true,
         "FACTOR_DECAY": 0.8,
-        "N_EPOCHS_DECAY": 20,
+        "N_EPOCHS_DECAY": 40,
         "PATIENCE": 30,
         "PATIENCE_P2P": 30
     }
