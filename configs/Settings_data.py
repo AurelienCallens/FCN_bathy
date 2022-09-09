@@ -56,5 +56,5 @@ bathy_range = [["2017/03/25", "2017/03/29"],
 # None : split the data 80% train /20% test for all the bathy surveys
 # "2018-01-31" : keep "2018-01-31" survey as test data
 # test_bathy = None
-# test_bathy = "2018-01-31"
-test_bathy = "2017-03-27"
+test_bathy = "2018-01-31"
+# test_bathy = "2017-03-27"
