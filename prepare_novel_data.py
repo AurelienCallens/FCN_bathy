@@ -10,6 +10,8 @@ Author:
 """
 
 import os
+import re 
+import glob
 import numpy as np
 import pandas as pd
 import geopandas as gpd
@@ -18,8 +20,33 @@ from shapely.geometry import Point
 from scipy.interpolate import griddata
 from sklearn.preprocessing import MinMaxScaler
 
+import configs.Settings_data as param_data
 from src.data_prep.img_processing import img_rotation, proj_rot, crop_img, ffill
 
+# img_folder = 'New_images/Ortho_new_images/'
+# list_dl_img = 'New_images/img_09_2022.csv'
+# meta_csv_name = 'New_images/Meta_09_2022.csv'
+
+def make_meta_csv(meta_csv_name, img_folder, list_dl_img):
+
+    # List all the images
+    list_img = glob.glob(img_folder + 'biarritz_3_2_1_*.png')
+    res_df = pd.DataFrame({'Fp_img': list_img})
+    res_df['Bn_img'] = res_df['Fp_img'].apply(os.path.basename)
+    res_df['Date'] = res_df['Bn_img'].apply(lambda x: x[15:34])
+    res_df['Date'] = pd.to_datetime(res_df['Date'], format="%Y-%m-%d-%H-%M-%S")
+    res_df['Date'] = res_df['Date'].apply(lambda x: x.replace(second=00))
+    res_df['Type_img'] = res_df['Bn_img'].apply(lambda x: re.search(r'.*?ed\_(.*)\..*', x).group(1))
+    res_df['Z_m'] = res_df['Bn_img'].apply(lambda x: re.search(r'.*?zplane\_(.*)\_bl.*', x).group(1).replace('_R', ''))
+
+    # Find Tide level (joining by date)
+    env_cond = pd.read_csv(list_dl_img)
+    env_cond =  env_cond.rename(columns={'Hs': 'Hs_m', 'Tp': 'Tp_m', 'Dir':'Dir_m'})
+    env_cond['Date'] = pd.to_datetime(env_cond['Date'], format="%Y-%m-%d %H:%M:%S")
+
+    full_res = pd.merge(res_df, env_cond.groupby('Date').mean(),  on='Date', how='inner')
+    full_res['X_Y'] = param_data.wind_pos
+    full_res.to_csv(meta_csv_name)
 
 def transform_test_image(fp_novel, fp_meta_csv, output_size):
     """Prepare one test image to be used by a tensorflow
@@ -84,6 +111,7 @@ def transform_test_image(fp_novel, fp_meta_csv, output_size):
     # Loop through every date + hour
 
     for date in date_unique:
+        print(date)
         temp_df = novel_df[novel_df['Date'] == date].reset_index()
 
         # X tensor (3, img_size, img_size) with mean RGB snap, timex
@@ -121,7 +149,7 @@ def transform_test_image(fp_novel, fp_meta_csv, output_size):
 
 if __name__ == '__main__':
 
-    transform_test_image(fp_novel="/home/aurelien/Desktop/FCN_bathy/data_CNN/Novel_data/Meta_novel_images.csv",
+    transform_test_image(fp_novel="/home/aurelien/Desktop/FCN_bathy/New_images/Meta_09_2022.csv",
                      fp_meta_csv="/home/aurelien/Desktop/FCN_bathy/data_CNN/Data_processed/Meta_df_extended.csv",
                      output_size=512)
     print('Novel data processed!')
