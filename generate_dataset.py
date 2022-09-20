@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Verification functions for the network
+"""Python script to prepare the data to be used by keras models. The repository
+ structure is specifically created to work with keras data loading procedures.
 
 Usage:
+    python3 generate_dataset.py [metadata.csv] [Output_dir]
 
+    where [metadata.csv] is the file with all the metadata about the images.
+    If not present in data_CNN/Data_processed repository, it will be created
+    and stored in this repository. The[Output_dir] is the name of the repository
+    where you want all the prepared data for the CNN training.
 
 Author:
     Aurelien Callens - 27/06/2022
@@ -17,6 +23,31 @@ from src.data_prep.make_img_csv import make_img_csv
 
 
 class Generate_dataset():
+    """
+    Custom class to generate dataset from metadata file
+
+    ...
+
+    Attributes
+    ----------
+    csv_path : str
+        Path of the metadata csv. If the file does not exist, it creates the 
+        metadata csv at this location
+    fp_name : str
+        Filepath of the output folder
+    Parameters :
+        All the others attributes are parameters imported from
+        ./configs/Settings_data.py
+
+    Methods
+    -------
+    generate_data_csv()
+        Generate metadata csv from a parameter file: ./configs/Settings_data.py
+
+    generate_cnn_dataset()
+        Generate the folders with processed data. The structure of the folders
+        is specifically created to work with keras data loading procedures.
+    """
     def __init__(self, meta_csv, output_fp):
 
         self.csv_path = meta_csv
@@ -68,14 +99,3 @@ if __name__ == '__main__':
     Generate_dataset(meta_csv = meta_file, output_fp = output_dir)
 
     print("Generation du dataset fini!")
-
-"""
-generate_data_folders_cnn(fp_name = 'data_CNN/' + 'Data_extended' + '/',
- df_fp_img =  'data_CNN/Data_processed/' + 'Meta_df_extended.csv',
- df_fp_bat =  param_data.df_fp_bat,
- bathy_range = param_data.bathy_range,
- output_size = param_data.output_size,
- tide_min = param_data.tide_min,
- tide_max = param_data.tide_max,
- test_bathy = param_data.test_bathy)
-"""

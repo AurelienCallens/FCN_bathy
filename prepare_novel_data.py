@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Prepare novel data in the right format for the deep learning network.
+"""Prepare novel data in the right format for the deep learning network. The
+folder paths indicated in the  "if __name__ == '__main__'" section must be
+ changed to correspond to the novel data.
 
 Usage:
-    
+    python3 prepare_novel_data.py
 
 Author:
     Aurélien Callens - 05/05/2022
 """
 
 import os
-import re 
+import re
 import glob
 import numpy as np
 import pandas as pd
@@ -28,6 +30,25 @@ from src.data_prep.img_processing import img_rotation, proj_rot, crop_img, ffill
 # meta_csv_name = 'New_images/Meta_09_2022.csv'
 
 def make_meta_csv(meta_csv_name, img_folder, list_dl_img):
+    """Make a csv file containing all the metadata about the novel images
+
+    Parameters
+    ----------
+    meta_csv_name : str
+        Filepath/name of the metadata file that will be created
+
+    img_folder : str
+        Filepath of the folder containing all the rectified images selected
+
+    list_dl_img: str
+        Csv file containing the metadata of novel data downloaded by scripts in
+        SIRENA_downloader folders
+
+    Output
+    ------
+    Save created table in a csv file with indicated name
+
+    """
 
     # List all the images
     list_img = glob.glob(img_folder + 'biarritz_3_2_1_*.png')
@@ -49,7 +70,7 @@ def make_meta_csv(meta_csv_name, img_folder, list_dl_img):
     full_res.to_csv(meta_csv_name)
 
 def transform_test_image(fp_novel, fp_meta_csv, output_size):
-    """Prepare one test image to be used by a tensorflow
+    """Prepare the novel images to be used by a tensorflow
     model
 
     This function prepares the images and the bathymetric data to be used by a
@@ -58,16 +79,19 @@ def transform_test_image(fp_novel, fp_meta_csv, output_size):
 
     Parameters
     ----------
-    fp_snap : str
+    fp_novel : str
+        filepath of the csv file containing the metadata about the novel data
 
-    fp_timex : str
+    fp_meta_csv : str
+        filepath of the csv file containing the metadata about the original
+        training data. It is needed to normalize the novel data.
 
     output_size : tuple
         Output size in pixels
-    vec_cond : float
 
     Output
     ------
+    Save the processed input into a folder that can be exploited by keras models
 
     """
     # Import df
@@ -149,7 +173,7 @@ def transform_test_image(fp_novel, fp_meta_csv, output_size):
 
 if __name__ == '__main__':
 
-    transform_test_image(fp_novel="/home/aurelien/Desktop/FCN_bathy/New_images/Meta_09_2022.csv",
-                     fp_meta_csv="/home/aurelien/Desktop/FCN_bathy/data_CNN/Data_processed/Meta_df_extended.csv",
+    transform_test_image(fp_novel="./New_images/Meta_09_2022.csv",
+                     fp_meta_csv="./data_CNN/Data_processed/Meta_df_extended.csv",
                      output_size=512)
     print('Novel data processed!')

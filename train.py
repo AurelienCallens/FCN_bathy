@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Verification functions for the network
+"""Python script to train the networks (Unet, Pix2Pix) with a configuration file
 
 Usage:
+    python3 train.py [gpu] [Name of config file]
 
+    where [gpu] is an option to perform the trainng with (1) or without (0)
+    a gpu and [Name of config file] is the name of the config file to be used.
+    The config file must be located in ./configs/
 
 Author:
-    Aurelien Callens - 14/03/2022
+    Aurelien Callens - 20/08/2022
 """
 import os
 import argparse
@@ -22,7 +26,31 @@ from src.evaluation.metric_functions import *
 from src.executor.tf_init import start_tf_session
 
 class Bathy_inv_network:
-    
+    """
+    Custom class to train the network depending on a configuration file in 
+    json format.
+
+    Attributes
+    ----------
+    params_file : str
+        Filepath of the configuration file
+    gpu : 0 or 1
+        If the gpu must be used or not
+
+    Methods
+    -------
+    train_unet()
+        Train a Unet network built with parameters indicated in the config file
+
+    train_Pix2pix()
+        Train Pix2Pix network built with parameters indicated in the config file
+
+    save_model()
+        Save the model and its performances on the test set in a csv file.
+
+    load_model()
+        Load a save network by indicating the filepath of the saved model
+    """
     def __init__(self, params_file, gpu):
         self.params = Param(params_file).load()
         self.params_file = params_file
