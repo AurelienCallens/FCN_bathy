@@ -19,10 +19,10 @@
         "FILTERS_G": 32,
         "FILTERS_D": 8,
         "NOISE_STD": 0.01,
-        "DROP_RATE": 0.4
+        "DROP_RATE": 0.3
     },
     "Train": {
-        "BATCH_SIZE": 12,
+        "BATCH_SIZE": 6,
         "BATCH_SIZE_P": 1,
         "EPOCHS": 1000,
         "LR": 0.001,

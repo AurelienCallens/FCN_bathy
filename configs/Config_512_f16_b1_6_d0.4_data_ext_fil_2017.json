@@ -1,6 +1,6 @@
 {
     "Input": {
-        "DIR_NAME": "Data_ext_fil_2018",
+        "DIR_NAME": "Data_ext_fil_2017",
         "IMG_SIZE": "(512, 512)",
         "N_CHANNELS": 3
     },
@@ -15,14 +15,14 @@
         "ACTIV": "relu",
         "K_INIT": "he_normal",
         "PRETRAINED_W": false,
-        "FILTERS": 32,
-        "FILTERS_G": 32,
+        "FILTERS": 16,
+        "FILTERS_G": 16,
         "FILTERS_D": 8,
         "NOISE_STD": 0.01,
-        "DROP_RATE": 0.3
+        "DROP_RATE": 0.4
     },
     "Train": {
-        "BATCH_SIZE": 12,
+        "BATCH_SIZE": 6,
         "BATCH_SIZE_P": 1,
         "EPOCHS": 1000,
         "LR": 0.001,

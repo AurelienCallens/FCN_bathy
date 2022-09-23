@@ -10,7 +10,7 @@ Created on Mon Jun 20 11:27:39 2022
 # Filepaths
 
 # Filepath for the orthorectified image repository:
-Img_folder_path = '/home/aurelien/Desktop/Orthorectification/Ortho_CNN/'
+Img_folder_path = '../Rectified_images/Ortho_CNN_extended/'
 
 
 # Settings for window positioning
