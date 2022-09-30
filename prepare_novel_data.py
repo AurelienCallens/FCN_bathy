@@ -98,6 +98,10 @@ def transform_test_image(fp_novel, fp_meta_csv, output_size):
     # Img dataframe
     print('Importing csv of novel data')
     novel_df = pd.read_csv(fp_novel)
+    novel_df.sort_values('Date', ignore_index=True, inplace=True)
+    novel_df['Date'] = pd.to_datetime(novel_df['Date'], format="%Y-%m-%d %H:%M:%S")
+    novel_df['Date'] = novel_df['Date'].apply(lambda x: x.strftime("%Y-%m-%d_%H-%M-%S"))
+    novel_df['Date'] = novel_df['Date'].astype(str)
 
     print('Importing meta csv')
     ref_df = pd.read_csv(fp_meta_csv)

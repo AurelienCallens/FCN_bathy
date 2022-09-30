@@ -117,7 +117,7 @@ class Bathy_inv_network:
                                                                                                     filters=filters_g,
                                                                                                     batch_size=batch_s,
                                                                                                     epochs=epoch_tr,
-                                                                                                    date=datetime.now().strftime("%d-%m-%Y_%H:%M"))
+                                                                                                    date=datetime.now().strftime("%d-%m-%Y_%H_%M"))
 
 
         res_dict = {'Name': name,

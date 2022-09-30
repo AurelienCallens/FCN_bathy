@@ -47,7 +47,7 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
     fp_name : str
         Name of the output directory
     df_fp_img : str
-        Filepath of the repository containing the orthorectified images
+        Filepath of the csv file with metadata
     df_fp_bat : str
         Filepath of the csvfile with bathymetric data
     output_size : tuple
@@ -84,9 +84,11 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
         final_df = final_df[~bathy_rip]
 
     final_df.sort_values('Date', ignore_index=True, inplace=True)
-
-    final_df['Date'] = final_df['Date'].astype(str)
-
+    final_df['Date'] = pd.to_datetime(final_df['Date'], format="%Y-%m-%d %H:%M:%S")
+    final_df['Date'] = final_df['Date'].apply(lambda x: x.strftime("%Y-%m-%d_%H-%M-%S"))
+    #final_df['Date'] = final_df['Date'].astype(str)
+    print('Date transformed')
+    
     if test_bathy is None:
         # Train test by day
         # Train
@@ -208,9 +210,9 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
 
         # Export matrix as img
         mat_3d = np.dstack((snp_mat, tmx_mat, env_mat))
-        name_inp = fp_name + temp_df.loc[0, 'Split'] + '/Input/' + date + '.npy'
+        name_inp = fp_name + temp_df.loc[0, 'Split'] + '/Input/' + str(date) + '.npy'
         np.save(name_inp, mat_3d.astype(np.float16))
 
-        name_tar = fp_name + temp_df.loc[0, 'Split'] + '/Target/' + date + '.npy'
+        name_tar = fp_name + temp_df.loc[0, 'Split'] + '/Target/' + str(date) + '.npy'
         np.save(name_tar, z_mesh.astype(np.float16))
 
