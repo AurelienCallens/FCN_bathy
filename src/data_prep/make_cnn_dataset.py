@@ -133,9 +133,9 @@ def generate_data_folders_cnn(fp_name, df_fp_img, df_fp_bat, output_size,
 
     # Scaling 0-1
     scaler = MinMaxScaler()
-    final_df['Hs_c'] = scaler.fit_transform(final_df[['Hs_m']])
-    final_df['Tp_c'] = scaler.fit_transform(final_df[['Tp_m']])
-    final_df['Dir_c'] = scaler.fit_transform(final_df[['Dir_m']])
+    final_df['Hs_c'] = scaler.fit_transform(final_df[['HS']])
+    final_df['Tp_c'] = scaler.fit_transform(final_df[['TP']])
+    final_df['Dir_c'] = scaler.fit_transform(final_df[['DIR']])
     final_df['Tide_c'] = scaler.fit_transform(final_df[['Tide']])
 
     # Extract unique date + hour

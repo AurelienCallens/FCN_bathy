@@ -10,7 +10,7 @@ Created on Mon Jun 20 11:27:39 2022
 # Filepaths
 
 # Filepath for the orthorectified image repository:
-Img_folder_path = '/home/aurelien/Desktop/Post_doc_Callens/Inversion_bathy/Rectified_images/Ortho_CNN_extended/'#'../Rectified_images/Ortho_CNN_extended/'
+Img_folder_path = '/home/aurelien/Desktop/Post_doc_Callens/Inversion_bathy/FCN_bathy/Rectified_images/Ortho_CNN_extended/'#'../Rectified_images/Ortho_CNN_extended/'
 
 
 # Settings for window positioning

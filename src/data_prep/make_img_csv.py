@@ -47,7 +47,6 @@ def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021,
     timex images corresponding to the bathy range.
 
     """
-
     # List all the images
     list_img = glob.glob(Img_folder_path + 'biarritz_3_2_1_*.png')
     res_df = pd.DataFrame({'Fp_img': list_img})
@@ -65,8 +64,6 @@ def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021,
 
     tide_data['Date'] = pd.to_datetime(tide_data['Date'],
                                        format="%Y-%m-%d %H:%M:%S")
-    tide_data.drop(['Obs_Tide', 'Tide'], axis=1, inplace=True)
-    tide_data.rename(columns={'True_tide': 'Tide'}, inplace=True)
 
     new_df = pd.merge(res_df, tide_data, on='Date', how='left')
     new_df['Date_h'] = new_df['Date'].apply(lambda x: (x + timedelta(hours=1)).strftime("%Y-%m-%d %H"))
@@ -75,8 +72,6 @@ def make_img_csv(csv_path, Img_folder_path, wind_pos, wind_pos_062021,
     wave_data = pd.read_csv('./data_CNN/Data_processed/wave_data_bathy.csv')
     wave_data['Date'] = pd.to_datetime(wave_data['Date'], format="%Y-%m-%dT%H:%M:%SZ")
     wave_data['Date_h'] = wave_data['Date'].apply(lambda x: x.strftime("%Y-%m-%d %H"))
-    wave_data.drop('VMDR', axis=1, inplace=True)
-    wave_data['Dir_m'] = np.round(wave_data['Dir_m'], 1)
 
     final_df = pd.merge(new_df, wave_data.drop('Date', axis=1),
                         on='Date_h', how='left')
