@@ -67,7 +67,7 @@ class UNet():
         self.DROP_RATE = params['Net_str']['DROP_RATE']
 
         self.BATCH_SIZE = params['Train']['BATCH_SIZE']
-        self.EPOCHS = 400  # params['Train']['EPOCHS']
+        self.EPOCHS = params['Train']['EPOCHS']
         self.LR = params['Train']['LR']
 
         self.DECAY_LR = params['Callbacks']['DECAY_LR']

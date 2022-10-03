@@ -81,7 +81,7 @@ class Pix2Pix():
 
         # Training
         self.EPOCHS = params['Train']['EPOCHS']
-        self.epoch_tr = params['Train']['EPOCHS']
+        self.epoch_tr = params['Train']['EPOCHS_P']
         self.BATCH_SIZE = params['Train']['BATCH_SIZE_P']
         self.LR = params['Train']['LR_P2P']
         self.PATIENCE = params['Callbacks']['PATIENCE_P2P']

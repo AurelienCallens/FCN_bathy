@@ -79,6 +79,7 @@ class Param():
         hyper['Train'] = {'BATCH_SIZE': 6,
                           'BATCH_SIZE_P': 1,
                           'EPOCHS': 100,
+                          'EPOCHS_P': 100,
                           'LR': 0.002,
                           'LR_P2P': 0.0002,
                           'OPTI': 'Adam' #tf.keras.optimizers.Adam(0.0002, 0.5)

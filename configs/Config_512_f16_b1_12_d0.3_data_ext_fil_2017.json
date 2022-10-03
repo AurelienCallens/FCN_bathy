@@ -22,9 +22,10 @@
         "DROP_RATE": 0.3
     },
     "Train": {
-        "BATCH_SIZE": 12,
+        "BATCH_SIZE": 6,
         "BATCH_SIZE_P": 1,
-        "EPOCHS": 1000,
+        "EPOCHS": 400,
+        "EPOCHS_P": 1000,
         "LR": 0.001,
         "LR_P2P": 0.0002,
         "OPTI": "Adam"
