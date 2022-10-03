@@ -80,13 +80,15 @@ class Pix2Pix():
         self.DROP_RATE = params['Net_str']['DROP_RATE']
 
         # Training
-        self.EPOCHS = params['Train']['EPOCHS']
-        self.epoch_tr = params['Train']['EPOCHS_P']
+        self.EPOCHS = params['Train']['EPOCHS_P']
         self.BATCH_SIZE = params['Train']['BATCH_SIZE_P']
         self.LR = params['Train']['LR_P2P']
         self.PATIENCE = params['Callbacks']['PATIENCE_P2P']
         optimizer = Adam(self.LR, 0.5)
         optimizer_disc = SGD(0.0002)
+
+        # Output
+        self.epoch_tr = params['Train']['EPOCHS_P']  # Number of epoch trained, Updated if early stoppping
 
         # Configure data sequence generator
         self.dataset_name = 'test_res'
