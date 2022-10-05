@@ -61,27 +61,28 @@ def img_rotation(data_fp):
         dst.close()
 
     # Open raster file
-    data = rasterio.open(raster_name)
-    # Reproject on new CRS with rotation
-    proj = proj_rot
-    with rasterio.Env():
-        # Source file
-        rows, cols = data.shape
-        src_transform = data.transform
-        source = rasterio.band(data, [1, 2, 3])
-        # Destination file with new CRS (Rotation)
-        dst_crs = CRS.from_proj4(proj)
-        transform, width, height = calculate_default_transform(
-            data.crs, dst_crs, data.width, data.height, *data.bounds)
-        destination = np.zeros((3, data.shape[0], 2000), np.uint8)
-        test = reproject(
-            source,
-            destination,
-            src_transform=src_transform,
-            src_crs=data.crs,
-            dst_transform=transform,
-            dst_crs=dst_crs,
-            resampling=Resampling.nearest)
+    with rasterio.open(raster_name) as data:
+        # Reproject on new CRS with rotation
+        proj = proj_rot
+        with rasterio.Env():
+            # Source file
+            rows, cols = data.shape
+            src_transform = data.transform
+            source = rasterio.band(data, [1, 2, 3])
+            # Destination file with new CRS (Rotation)
+            dst_crs = CRS.from_proj4(proj)
+            transform, width, height = calculate_default_transform(
+                data.crs, dst_crs, data.width, data.height, *data.bounds)
+            destination = np.zeros((3, data.shape[0], 2000), np.uint8)
+            test = reproject(
+                source,
+                destination,
+                src_transform=src_transform,
+                src_crs=data.crs,
+                dst_transform=transform,
+                dst_crs=dst_crs,
+                resampling=Resampling.nearest)
+        data.close()
     os.remove(raster_name)
     return([test[0], transform])
 

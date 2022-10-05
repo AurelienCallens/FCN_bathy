@@ -62,12 +62,28 @@ def make_meta_csv(meta_csv_name, img_folder, list_dl_img):
 
     # Find Tide level (joining by date)
     env_cond = pd.read_csv(list_dl_img)
-    env_cond =  env_cond.rename(columns={'Hs': 'Hs_m', 'Tp': 'Tp_m', 'Dir':'Dir_m'})
+    env_cond =  env_cond.rename(columns={'Hs': 'HS', 'Tp': 'TP', 'Dir':'DIR'})
     env_cond['Date'] = pd.to_datetime(env_cond['Date'], format="%Y-%m-%d %H:%M:%S")
 
     full_res = pd.merge(res_df, env_cond.groupby('Date').mean(),  on='Date', how='inner')
     full_res['X_Y'] = param_data.wind_pos
+
+    # Select the date where we have complete data (snap + timex)
+    date_unique = full_res['Date'].unique()
+    date_verif = []
+    for date in date_unique:
+        temp_df = full_res[full_res['Date'] == date].reset_index()
+        if temp_df.shape[0] == 2:
+            date_verif.append(True)
+        else:
+            date_verif.append(False)
+
+    full_res = full_res[full_res.Date.apply(lambda x: x in pd.to_datetime(date_unique[date_verif]))]
     full_res.to_csv(meta_csv_name)
+
+
+# make_meta_csv(meta_csv_name, img_folder, list_dl_img)
+
 
 def transform_test_image(fp_novel, fp_meta_csv, output_size):
     """Prepare the novel images to be used by a tensorflow
@@ -110,7 +126,7 @@ def transform_test_image(fp_novel, fp_meta_csv, output_size):
     print('Normalizing env. cond. ...')
 
     scaler = MinMaxScaler()
-    var_m = ['Hs_m', 'Tp_m', 'Dir_m', 'Tide']
+    var_m = ['HS', 'TP', 'DIR', 'Tide']
     var_c = ['Hs_c', 'Tp_c', 'Dir_c', 'Tide_c']
 
     for i in range(len(var_m)):
@@ -178,6 +194,6 @@ def transform_test_image(fp_novel, fp_meta_csv, output_size):
 if __name__ == '__main__':
 
     transform_test_image(fp_novel="./New_images/Meta_09_2022.csv",
-                     fp_meta_csv="./data_CNN/Data_processed/Meta_df_extended.csv",
+                     fp_meta_csv="./data_CNN/Data_processed/Meta_df_newfp.csv",
                      output_size=512)
     print('Novel data processed!')
